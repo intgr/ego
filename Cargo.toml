@@ -1,9 +1,13 @@
 [package]
 name = "ego"
 version = "0.1.0"
-authors = ["Marti Raudsepp <marti@juffo.org>"]
 edition = "2018"
 
+# Metadata
+authors = ["Marti Raudsepp <marti@juffo.org>"]
+description = "Tool to run Linux desktop applications under a different local user"
+readme = "README.md"
+license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
