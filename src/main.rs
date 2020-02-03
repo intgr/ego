@@ -12,9 +12,10 @@ use users::{get_current_uid, get_current_username, get_user_by_name, uid_t};
 use crate::acl::PosixACL;
 use crate::acl::Qualifier::User;
 
-mod acl;
+pub mod acl; // Currently just to silence warnings
 
 struct EgoContext {
+    #[allow(dead_code)] // FIXME
     cur_user: String,
     cur_uid: uid_t,
     target_user: String,

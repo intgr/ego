@@ -22,7 +22,6 @@ fn path_to_cstring(path: &Path) -> CString {
     CString::new(path.as_os_str().as_bytes()).unwrap()
 }
 
-#[allow(dead_code)]
 pub enum Qualifier {
     Undefined,
     UserObj,
@@ -59,7 +58,19 @@ fn check_return(ret: i32, func: &str) {
     }
 }
 
+fn check_pointer<T: ?Sized>(ret: *const T, func: &str) {
+    if ret.is_null() {
+        panic!("Error in {}: {}", func, Error::last_os_error());
+    }
+}
+
 impl PosixACL {
+    pub fn with_capacity(capacity: usize) -> PosixACL {
+        let acl = unsafe { acl_init(capacity as i32) };
+        check_pointer(acl, "acl_init");
+        PosixACL { acl }
+    }
+
     pub fn read_acl(path: &Path) -> Result<PosixACL, SimpleError> {
         let c_path = path_to_cstring(path);
         let acl: acl_t = unsafe { acl_get_file(c_path.as_ptr(), ACL_TYPE_ACCESS) };
@@ -119,9 +130,7 @@ impl PosixACL {
         let chars = unsafe {
             let mut len: ssize_t = 0;
             let txt = acl_to_text(self.acl, &mut len);
-            if txt.is_null() {
-                panic!("Error in acl_to_text: {}", Error::last_os_error());
-            }
+            check_pointer(txt, "acl_to_text");
             from_raw_parts(txt as *const u8, len as usize)
         };
         from_utf8(chars).unwrap().to_string()
