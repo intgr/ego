@@ -11,3 +11,7 @@ license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+users = "0.9.1"
+acl-sys = "1.0.1"
+libc = "0.1"
+simple-error = "0.2.1"
