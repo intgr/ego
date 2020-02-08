@@ -1,18 +1,12 @@
-#[macro_use]
-extern crate simple_error;
-
 use std::env;
 use std::env::VarError;
 use std::path::{Path, PathBuf};
 
-use acl_sys::*;
 use simple_error::SimpleError;
 use users::{get_current_uid, get_current_username, get_user_by_name, uid_t};
 
-use crate::acl::PosixACL;
-use crate::acl::Qualifier::User;
-
-pub mod acl; // Currently just to silence warnings
+use posix_acl::Qualifier;
+use posix_acl::{PosixACL, ACL_EXECUTE, ACL_READ, ACL_WRITE};
 
 struct EgoContext {
     #[allow(dead_code)] // FIXME
@@ -52,7 +46,7 @@ fn create_context(username: &str) -> EgoContext {
 
 fn add_file_acl(path: &Path, uid: u32, flags: u32) -> Result<(), SimpleError> {
     let mut acl = PosixACL::read_acl(path)?;
-    acl.set(User(uid), flags);
+    acl.set(Qualifier::User(uid), flags);
     acl.write_acl(path)?;
 
     Ok(())

@@ -12,6 +12,5 @@ license = "MIT"
 
 [dependencies]
 users = "0.9.1"
-acl-sys = "1.0.1"
-libc = "0.1"
 simple-error = "0.2.1"
+posix-acl = "0.2.0"
