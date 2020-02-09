@@ -30,13 +30,13 @@ fn main() {
     );
 
     let ret = prepare_runtime_dir(&ctx);
-    if ret.is_err() {
-        println!("Error setting up XDG_RUNTIME_DIR: {}", ret.unwrap_err());
+    if let Err(msg) = ret {
+        println!("Error setting up XDG_RUNTIME_DIR: {}", msg);
         exit(1);
     }
     let ret = prepare_wayland(&ctx);
-    if ret.is_err() {
-        println!("Error with Wayland: {}", ret.unwrap_err())
+    if let Err(msg) = ret {
+        println!("Error with Wayland: {}", msg)
     }
 }
 
