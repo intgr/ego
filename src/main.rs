@@ -3,6 +3,7 @@ extern crate simple_error;
 
 use std::env;
 use std::env::VarError;
+use std::error::Error;
 use std::path::{Path, PathBuf};
 use std::process::exit;
 
@@ -10,6 +11,8 @@ use posix_acl::Qualifier;
 use posix_acl::{PosixACL, ACL_EXECUTE, ACL_READ, ACL_WRITE};
 use simple_error::SimpleError;
 use users::{get_current_uid, get_current_username, get_user_by_name, uid_t};
+
+type AnyErr = Box<dyn Error>;
 
 struct EgoContext {
     #[allow(dead_code)] // FIXME
@@ -21,9 +24,9 @@ struct EgoContext {
     target_uid: uid_t,
 }
 
-fn main() {
+fn main_inner() -> Result<(), AnyErr> {
     let username = "ego";
-    let ctx = create_context(username);
+    let ctx = create_context(username)?;
     println!(
         "Setting up Alter Ego for user {} ({})",
         ctx.target_user, ctx.target_uid
@@ -31,29 +34,47 @@ fn main() {
 
     let ret = prepare_runtime_dir(&ctx);
     if let Err(msg) = ret {
-        println!("Error setting up XDG_RUNTIME_DIR: {}", msg);
-        exit(1);
+        bail!("Error preparing runtime dir: {}", msg);
     }
     let ret = prepare_wayland(&ctx);
     if let Err(msg) = ret {
-        println!("Error with Wayland: {}", msg)
+        bail!("Error preparing Wayland: {}", msg)
+    }
+    Ok(())
+}
+
+fn main() {
+    let ret = main_inner();
+    if let Err(msg) = ret {
+        eprintln!("Error: {}", msg);
+        exit(1);
     }
 }
 
-fn create_context(username: &str) -> EgoContext {
+/// Wrapper for nicer error messages
+fn getenv(key: &str) -> Result<String, SimpleError> {
+    match env::var(key) {
+        Ok(val) => Ok(val),
+        Err(VarError::NotPresent) => bail!("Env variable {} unset", key),
+        // We could use Path type for non-Unicode paths, but it's not worth it. Fix your s*#t!
+        Err(VarError::NotUnicode(_)) => bail!("Env variable {} invalid", key),
+    }
+}
+
+fn create_context(username: &str) -> Result<EgoContext, AnyErr> {
     let cur_user = get_current_username()
         .expect("Unable to resolve current user")
         .into_string()
         .expect("Invalid current user username");
-    let user = get_user_by_name(&username).expect("Unable to resolve target user");
-    let runtime_dir = env::var("XDG_RUNTIME_DIR").expect("Error resolving XDG_RUNTIME_DIR");
-    EgoContext {
+    let user = require_with!(get_user_by_name(&username), "Unknown user '{}'", username);
+    let runtime_dir = getenv("XDG_RUNTIME_DIR")?;
+    Ok(EgoContext {
         cur_user,
         cur_uid: get_current_uid(),
         runtime_dir: runtime_dir.into(),
         target_user: username.to_string(),
         target_uid: user.uid(),
-    }
+    })
 }
 
 fn add_file_acl(path: &Path, uid: u32, flags: u32) -> Result<(), SimpleError> {
@@ -68,15 +89,15 @@ fn add_file_acl(path: &Path, uid: u32, flags: u32) -> Result<(), SimpleError> {
 fn prepare_runtime_dir(ctx: &EgoContext) -> Result<(), SimpleError> {
     let path = &ctx.runtime_dir;
     if !path.is_dir() {
-        bail!("Path {} is not a directory", path.display());
+        bail!("'{}' is not a directory", path.display());
     }
     add_file_acl(path, ctx.target_uid, ACL_EXECUTE)?;
-    println!("Runtime data dir {} configured", path.display());
+    println!("Runtime data dir '{}' configured", path.display());
     Ok(())
 }
 
-fn get_wayland_socket(ctx: &EgoContext) -> Result<PathBuf, VarError> {
-    let path = env::var("WAYLAND_DISPLAY")?;
+fn get_wayland_socket(ctx: &EgoContext) -> Result<PathBuf, AnyErr> {
+    let path = getenv("WAYLAND_DISPLAY")?;
     // May be full path or relative
     if path.starts_with('/') {
         Ok(path.into())
@@ -86,18 +107,13 @@ fn get_wayland_socket(ctx: &EgoContext) -> Result<PathBuf, VarError> {
 }
 
 /// Add rwx permissions to Wayland socket (e.g. `/run/user/1000/wayland-0`)
-fn prepare_wayland(ctx: &EgoContext) -> Result<(), SimpleError> {
-    let path = get_wayland_socket(ctx);
-    if path.is_err() {
-        println!("Cannot detect Wayland socket: {}", path.err().unwrap());
-        return Ok(());
-    }
-    let path = path.unwrap();
+fn prepare_wayland(ctx: &EgoContext) -> Result<(), AnyErr> {
+    let path = get_wayland_socket(ctx)?;
     add_file_acl(
         path.as_path(),
         ctx.target_uid,
         ACL_READ | ACL_WRITE | ACL_EXECUTE,
     )?;
-    println!("Wayland socket {} configured", path.display());
+    println!("Wayland socket '{}' configured", path.display());
     Ok(())
 }
