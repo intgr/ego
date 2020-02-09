@@ -7,8 +7,7 @@ use std::error::Error;
 use std::path::{Path, PathBuf};
 use std::process::exit;
 
-use posix_acl::Qualifier;
-use posix_acl::{PosixACL, ACL_EXECUTE, ACL_READ, ACL_WRITE};
+use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_RWX};
 use simple_error::SimpleError;
 use users::{get_current_uid, get_current_username, get_user_by_name, uid_t};
 
@@ -109,11 +108,7 @@ fn get_wayland_socket(ctx: &EgoContext) -> Result<PathBuf, AnyErr> {
 /// Add rwx permissions to Wayland socket (e.g. `/run/user/1000/wayland-0`)
 fn prepare_wayland(ctx: &EgoContext) -> Result<(), AnyErr> {
     let path = get_wayland_socket(ctx)?;
-    add_file_acl(
-        path.as_path(),
-        ctx.target_uid,
-        ACL_READ | ACL_WRITE | ACL_EXECUTE,
-    )?;
+    add_file_acl(path.as_path(), ctx.target_uid, ACL_RWX)?;
     println!("Wayland socket '{}' configured", path.display());
     Ok(())
 }
