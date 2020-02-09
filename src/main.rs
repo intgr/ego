@@ -4,6 +4,7 @@ extern crate simple_error;
 use std::env;
 use std::env::VarError;
 use std::error::Error;
+use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::exit;
 
@@ -126,6 +127,28 @@ fn prepare_pulseaudio(ctx: &EgoContext) -> Result<(), AnyErr> {
         return Ok(());
     }
     add_file_acl(path.as_path(), ctx.target_uid, ACL_EXECUTE)?;
+
+    prepare_pulseaudio_socket(path.as_path())?;
+
     println!("PulseAudio dir '{}' configured", path.display());
+    Ok(())
+}
+
+/// Check permissions of PulseAudio socket `/run/user/1000/pulse/native`
+fn prepare_pulseaudio_socket(dir: &Path) -> Result<(), AnyErr> {
+    let path = dir.join("native");
+    let meta = path.metadata();
+    if let Err(msg) = meta {
+        bail!("'{}': {}", path.display(), msg);
+    }
+    let mode = meta.unwrap().permissions().mode();
+    const WORLD_READ_PERMS: u32 = 0o006;
+    if mode & WORLD_READ_PERMS != WORLD_READ_PERMS {
+        bail!(
+            "Unexpected permissions on '{}': {:o}",
+            path.display(),
+            mode & 0o777
+        );
+    }
     Ok(())
 }
