@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="cargo fix" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
+  <configuration default="false" name="cargo clippy" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
     <option name="channel" value="DEFAULT" />
-    <option name="command" value="fix --allow-dirty" />
+    <option name="command" value="clippy" />
     <option name="allFeatures" value="false" />
     <option name="nocapture" value="false" />
     <option name="emulateTerminal" value="false" />
