@@ -42,6 +42,10 @@ fn main_inner() -> Result<(), AnyErr> {
     if let Err(msg) = ret {
         bail!("Error preparing Wayland: {}", msg)
     }
+    let ret = prepare_pulseaudio(&ctx);
+    if let Err(msg) = ret {
+        bail!("Error preparing PulseAudio: {}", msg)
+    }
     Ok(())
 }
 
@@ -109,5 +113,19 @@ fn prepare_wayland(ctx: &EgoContext) -> Result<(), AnyErr> {
     let path = get_wayland_socket(ctx)?;
     add_file_acl(path.as_path(), ctx.target_uid, ACL_RWX)?;
     println!("Wayland socket '{}' configured", path.display());
+    Ok(())
+}
+
+/// Add execute permissions to PulseAudio directory (e.g. `/run/user/1000/pulse`)
+///
+/// The actual socket `/run/user/1000/pulse/native` already has full read-write permissions.
+fn prepare_pulseaudio(ctx: &EgoContext) -> Result<(), AnyErr> {
+    let path = ctx.runtime_dir.join("pulse");
+    if !path.is_dir() {
+        println!("PulseAudio dir '{}' not found, skipping", path.display());
+        return Ok(());
+    }
+    add_file_acl(path.as_path(), ctx.target_uid, ACL_EXECUTE)?;
+    println!("PulseAudio dir '{}' configured", path.display());
     Ok(())
 }
