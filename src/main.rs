@@ -13,6 +13,9 @@ use users::{get_current_uid, get_current_username, get_user_by_name, uid_t};
 
 type AnyErr = Box<dyn Error>;
 
+#[cfg(test)]
+mod tests;
+
 struct EgoContext {
     #[allow(dead_code)] // FIXME
     cur_user: String,
@@ -51,9 +54,9 @@ fn main() {
 }
 
 /// Wrapper for nicer error messages
-fn getenv(key: &str) -> Result<String, SimpleError> {
+fn getenv_path(key: &str) -> Result<PathBuf, SimpleError> {
     match env::var(key) {
-        Ok(val) => Ok(val),
+        Ok(val) => Ok(val.into()),
         Err(VarError::NotPresent) => bail!("Env variable {} unset", key),
         // We could use Path type for non-Unicode paths, but it's not worth it. Fix your s*#t!
         Err(VarError::NotUnicode(_)) => bail!("Env variable {} invalid", key),
@@ -66,11 +69,11 @@ fn create_context(username: &str) -> Result<EgoContext, AnyErr> {
         .into_string()
         .expect("Invalid current user username");
     let user = require_with!(get_user_by_name(&username), "Unknown user '{}'", username);
-    let runtime_dir = getenv("XDG_RUNTIME_DIR")?;
+    let runtime_dir = getenv_path("XDG_RUNTIME_DIR")?;
     Ok(EgoContext {
         cur_user,
         cur_uid: get_current_uid(),
-        runtime_dir: runtime_dir.into(),
+        runtime_dir,
         target_user: username.to_string(),
         target_uid: user.uid(),
     })
@@ -80,7 +83,6 @@ fn add_file_acl(path: &Path, uid: u32, flags: u32) -> Result<(), SimpleError> {
     let mut acl = PosixACL::read_acl(path)?;
     acl.set(Qualifier::User(uid), flags);
     acl.write_acl(path)?;
-
     Ok(())
 }
 
@@ -95,14 +97,11 @@ fn prepare_runtime_dir(ctx: &EgoContext) -> Result<(), SimpleError> {
     Ok(())
 }
 
+/// WAYLAND_DISPLAY may be absolute path or relative to XDG_RUNTIME_DIR
+/// See https://manpages.debian.org/experimental/libwayland-doc/wl_display_connect.3.en.html
 fn get_wayland_socket(ctx: &EgoContext) -> Result<PathBuf, AnyErr> {
-    let path = getenv("WAYLAND_DISPLAY")?;
-    // May be full path or relative
-    if path.starts_with('/') {
-        Ok(path.into())
-    } else {
-        Ok(format!("{}/{}", ctx.runtime_dir.to_str().unwrap(), path).into())
-    }
+    let display = getenv_path("WAYLAND_DISPLAY")?;
+    Ok(ctx.runtime_dir.join(display))
 }
 
 /// Add rwx permissions to Wayland socket (e.g. `/run/user/1000/wayland-0`)
