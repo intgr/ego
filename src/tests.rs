@@ -14,17 +14,17 @@ fn test_context() -> EgoContext {
 fn wayland_socket() {
     let ctx = test_context();
     env::remove_var("WAYLAND_DISPLAY");
-    assert!(get_wayland_socket(&ctx).is_err());
+    assert_eq!(get_wayland_socket(&ctx).unwrap(), None);
 
     env::set_var("WAYLAND_DISPLAY", "wayland-7");
     assert_eq!(
-        get_wayland_socket(&ctx).unwrap(),
+        get_wayland_socket(&ctx).unwrap().unwrap(),
         PathBuf::from("/run/user/1000/wayland-7")
     );
 
     env::set_var("WAYLAND_DISPLAY", "/tmp/wayland-7");
     assert_eq!(
-        get_wayland_socket(&ctx).unwrap(),
+        get_wayland_socket(&ctx).unwrap().unwrap(),
         PathBuf::from("/tmp/wayland-7")
     );
 }

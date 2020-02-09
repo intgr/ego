@@ -58,13 +58,22 @@ fn main() {
     }
 }
 
-/// Wrapper for nicer error messages
-fn getenv_path(key: &str) -> Result<PathBuf, SimpleError> {
+/// Optionally get an environment variable.
+/// Returns `Ok(None)` for missing env variable.
+fn getenv_path_optional(key: &str) -> Result<Option<PathBuf>, SimpleError> {
     match env::var(key) {
-        Ok(val) => Ok(val.into()),
-        Err(VarError::NotPresent) => bail!("Env variable {} unset", key),
+        Ok(val) => Ok(Some(PathBuf::from(val))),
+        Err(VarError::NotPresent) => Ok(None),
         // We could use Path type for non-Unicode paths, but it's not worth it. Fix your s*#t!
         Err(VarError::NotUnicode(_)) => bail!("Env variable {} invalid", key),
+    }
+}
+
+/// Require an environment variable.
+fn getenv_path(key: &str) -> Result<PathBuf, SimpleError> {
+    match getenv_path_optional(key)? {
+        Some(val) => Ok(val),
+        None => bail!("Env variable {} unset", key),
     }
 }
 
@@ -104,14 +113,22 @@ fn prepare_runtime_dir(ctx: &EgoContext) -> Result<(), SimpleError> {
 
 /// WAYLAND_DISPLAY may be absolute path or relative to XDG_RUNTIME_DIR
 /// See https://manpages.debian.org/experimental/libwayland-doc/wl_display_connect.3.en.html
-fn get_wayland_socket(ctx: &EgoContext) -> Result<PathBuf, AnyErr> {
-    let display = getenv_path("WAYLAND_DISPLAY")?;
-    Ok(ctx.runtime_dir.join(display))
+fn get_wayland_socket(ctx: &EgoContext) -> Result<Option<PathBuf>, AnyErr> {
+    match getenv_path_optional("WAYLAND_DISPLAY")? {
+        None => Ok(None),
+        Some(display) => Ok(Some(ctx.runtime_dir.join(display))),
+    }
 }
 
 /// Add rwx permissions to Wayland socket (e.g. `/run/user/1000/wayland-0`)
 fn prepare_wayland(ctx: &EgoContext) -> Result<(), AnyErr> {
     let path = get_wayland_socket(ctx)?;
+    if path.is_none() {
+        println!("Wayland: WAYLAND_DISPLAY not set, skipping");
+        return Ok(());
+    }
+
+    let path = path.unwrap();
     add_file_acl(path.as_path(), ctx.target_uid, ACL_RWX)?;
     println!("Wayland socket '{}' configured", path.display());
     Ok(())
