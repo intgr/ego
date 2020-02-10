@@ -10,7 +10,7 @@ use std::process::{exit, Command};
 
 use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_RWX};
 use simple_error::SimpleError;
-use users::{get_current_uid, get_current_username, get_user_by_name, uid_t};
+use users::{get_user_by_name, uid_t};
 
 type AnyErr = Box<dyn Error>;
 
@@ -18,10 +18,6 @@ type AnyErr = Box<dyn Error>;
 mod tests;
 
 struct EgoContext {
-    #[allow(dead_code)] // FIXME
-    cur_user: String,
-    #[allow(dead_code)] // FIXME
-    cur_uid: uid_t,
     runtime_dir: PathBuf,
     target_user: String,
     target_uid: uid_t,
@@ -93,15 +89,9 @@ fn getenv_path(key: &str) -> Result<PathBuf, SimpleError> {
 }
 
 fn create_context(username: &str) -> Result<EgoContext, AnyErr> {
-    let cur_user = get_current_username()
-        .expect("Unable to resolve current user")
-        .into_string()
-        .expect("Invalid current user username");
     let user = require_with!(get_user_by_name(&username), "Unknown user '{}'", username);
     let runtime_dir = getenv_path("XDG_RUNTIME_DIR")?;
     Ok(EgoContext {
-        cur_user,
-        cur_uid: get_current_uid(),
         runtime_dir,
         target_user: username.to_string(),
         target_uid: user.uid(),
