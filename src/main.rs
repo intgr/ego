@@ -29,7 +29,7 @@ struct EgoContext {
 
 fn main_inner() -> Result<(), AnyErr> {
     let mut vars: Vec<String> = Vec::new();
-    let username = "ego";
+    let username = "ego"; // TODO: take username as argument
     let ctx = create_context(username)?;
     println!(
         "Setting up Alter Ego for user {} ({})",
@@ -52,10 +52,13 @@ fn main_inner() -> Result<(), AnyErr> {
         Err(msg) => bail!("Error preparing PulseAudio: {}", msg),
         Ok(ret) => vars.extend(ret),
     }
+    // TODO: Set up xdg-desktop-portal-gtk
 
+    // TODO: automatically execute? Use sudo?
     println!("Finished! Run with command:");
     print!("ssh {}@localhost -- env ", ctx.target_user);
     for var in vars {
+        // TODO: Escape vars?
         print!("{} ", var);
     }
     println!("CMD");
@@ -166,6 +169,7 @@ fn prepare_x11(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
             String::from_utf8_lossy(&ret.stderr)
         );
     }
+    // TODO should also test /tmp/.X11-unix/X0 permissions?
 
     println!("X11 configured to allow {}", grant);
     Ok(vec![format!("DISPLAY={}", display.unwrap())])
@@ -184,6 +188,7 @@ fn prepare_pulseaudio(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
     add_file_acl(path.as_path(), ctx.target_uid, ACL_EXECUTE)?;
 
     let envs = prepare_pulseaudio_socket(path.as_path())?;
+    // TODO: Automatically set up PulseAudio cookie
 
     println!("PulseAudio dir '{}' configured", path.display());
     Ok(envs)
