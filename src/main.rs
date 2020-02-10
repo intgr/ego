@@ -28,6 +28,7 @@ struct EgoContext {
 }
 
 fn main_inner() -> Result<(), AnyErr> {
+    let mut vars: Vec<String> = Vec::new();
     let username = "ego";
     let ctx = create_context(username)?;
     println!(
@@ -39,18 +40,25 @@ fn main_inner() -> Result<(), AnyErr> {
     if let Err(msg) = ret {
         bail!("Error preparing runtime dir: {}", msg);
     }
-    let ret = prepare_wayland(&ctx);
-    if let Err(msg) = ret {
-        bail!("Error preparing Wayland: {}", msg)
+    match prepare_wayland(&ctx) {
+        Err(msg) => bail!("Error preparing Wayland: {}", msg),
+        Ok(ret) => vars.extend(ret),
     }
-    let ret = prepare_x11(&ctx);
-    if let Err(msg) = ret {
-        bail!("Error preparing X11: {}", msg)
+    match prepare_x11(&ctx) {
+        Err(msg) => bail!("Error preparing X11: {}", msg),
+        Ok(ret) => vars.extend(ret),
     }
-    let ret = prepare_pulseaudio(&ctx);
-    if let Err(msg) = ret {
-        bail!("Error preparing PulseAudio: {}", msg)
+    match prepare_pulseaudio(&ctx) {
+        Err(msg) => bail!("Error preparing PulseAudio: {}", msg),
+        Ok(ret) => vars.extend(ret),
     }
+
+    println!("Finished! Run with command:");
+    print!("ssh {}@localhost -- env ", ctx.target_user);
+    for var in vars {
+        print!("{} ", var);
+    }
+    println!("CMD");
     Ok(())
 }
 
@@ -125,25 +133,28 @@ fn get_wayland_socket(ctx: &EgoContext) -> Result<Option<PathBuf>, AnyErr> {
 }
 
 /// Add rwx permissions to Wayland socket (e.g. `/run/user/1000/wayland-0`)
-fn prepare_wayland(ctx: &EgoContext) -> Result<(), AnyErr> {
+/// Return environment vars for `WAYLAND_DISPLAY`.
+fn prepare_wayland(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
     let path = get_wayland_socket(ctx)?;
     if path.is_none() {
         println!("Wayland: WAYLAND_DISPLAY not set, skipping");
-        return Ok(());
+        return Ok(vec![]);
     }
 
     let path = path.unwrap();
     add_file_acl(path.as_path(), ctx.target_uid, ACL_RWX)?;
+
     println!("Wayland socket '{}' configured", path.display());
-    Ok(())
+    Ok(vec![format!("WAYLAND_DISPLAY={}", path.to_str().unwrap())])
 }
 
 /// Detect `DISPLAY` and run `xhost` to grant permissions.
-fn prepare_x11(ctx: &EgoContext) -> Result<(), AnyErr> {
+/// Return environment vars for `DISPLAY`
+fn prepare_x11(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
     let display = getenv_optional("DISPLAY")?;
     if display.is_none() {
         println!("X11: DISPLAY not set, skipping");
-        return Ok(());
+        return Ok(vec![]);
     }
 
     let grant = format!("+si:localuser:{}", ctx.target_user);
@@ -157,28 +168,29 @@ fn prepare_x11(ctx: &EgoContext) -> Result<(), AnyErr> {
     }
 
     println!("X11 configured to allow {}", grant);
-    Ok(())
+    Ok(vec![format!("DISPLAY={}", display.unwrap())])
 }
 
 /// Add execute permissions to PulseAudio directory (e.g. `/run/user/1000/pulse`)
+/// Return environment vars for `PULSE_SERVER`.
 ///
 /// The actual socket `/run/user/1000/pulse/native` already has full read-write permissions.
-fn prepare_pulseaudio(ctx: &EgoContext) -> Result<(), AnyErr> {
+fn prepare_pulseaudio(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
     let path = ctx.runtime_dir.join("pulse");
     if !path.is_dir() {
         println!("PulseAudio dir '{}' not found, skipping", path.display());
-        return Ok(());
+        return Ok(vec![]);
     }
     add_file_acl(path.as_path(), ctx.target_uid, ACL_EXECUTE)?;
 
-    prepare_pulseaudio_socket(path.as_path())?;
+    let envs = prepare_pulseaudio_socket(path.as_path())?;
 
     println!("PulseAudio dir '{}' configured", path.display());
-    Ok(())
+    Ok(envs)
 }
 
 /// Check permissions of PulseAudio socket `/run/user/1000/pulse/native`
-fn prepare_pulseaudio_socket(dir: &Path) -> Result<(), AnyErr> {
+fn prepare_pulseaudio_socket(dir: &Path) -> Result<Vec<String>, AnyErr> {
     let path = dir.join("native");
     let meta = path.metadata();
     if let Err(msg) = meta {
@@ -193,5 +205,8 @@ fn prepare_pulseaudio_socket(dir: &Path) -> Result<(), AnyErr> {
             mode & 0o777
         );
     }
-    Ok(())
+    Ok(vec![format!(
+        "PULSE_SERVER=unix:{}",
+        path.to_str().unwrap()
+    )])
 }
