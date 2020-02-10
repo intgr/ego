@@ -6,7 +6,7 @@ use std::env::VarError;
 use std::error::Error;
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
-use std::process::exit;
+use std::process::{exit, Command};
 
 use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_RWX};
 use simple_error::SimpleError;
@@ -43,6 +43,10 @@ fn main_inner() -> Result<(), AnyErr> {
     if let Err(msg) = ret {
         bail!("Error preparing Wayland: {}", msg)
     }
+    let ret = prepare_x11(&ctx);
+    if let Err(msg) = ret {
+        bail!("Error preparing X11: {}", msg)
+    }
     let ret = prepare_pulseaudio(&ctx);
     if let Err(msg) = ret {
         bail!("Error preparing PulseAudio: {}", msg)
@@ -60,9 +64,9 @@ fn main() {
 
 /// Optionally get an environment variable.
 /// Returns `Ok(None)` for missing env variable.
-fn getenv_path_optional(key: &str) -> Result<Option<PathBuf>, SimpleError> {
+fn getenv_optional(key: &str) -> Result<Option<String>, SimpleError> {
     match env::var(key) {
-        Ok(val) => Ok(Some(PathBuf::from(val))),
+        Ok(val) => Ok(Some(val)),
         Err(VarError::NotPresent) => Ok(None),
         // We could use Path type for non-Unicode paths, but it's not worth it. Fix your s*#t!
         Err(VarError::NotUnicode(_)) => bail!("Env variable {} invalid", key),
@@ -71,8 +75,8 @@ fn getenv_path_optional(key: &str) -> Result<Option<PathBuf>, SimpleError> {
 
 /// Require an environment variable.
 fn getenv_path(key: &str) -> Result<PathBuf, SimpleError> {
-    match getenv_path_optional(key)? {
-        Some(val) => Ok(val),
+    match getenv_optional(key)? {
+        Some(val) => Ok(PathBuf::from(val)),
         None => bail!("Env variable {} unset", key),
     }
 }
@@ -114,7 +118,7 @@ fn prepare_runtime_dir(ctx: &EgoContext) -> Result<(), SimpleError> {
 /// WAYLAND_DISPLAY may be absolute path or relative to XDG_RUNTIME_DIR
 /// See https://manpages.debian.org/experimental/libwayland-doc/wl_display_connect.3.en.html
 fn get_wayland_socket(ctx: &EgoContext) -> Result<Option<PathBuf>, AnyErr> {
-    match getenv_path_optional("WAYLAND_DISPLAY")? {
+    match getenv_optional("WAYLAND_DISPLAY")? {
         None => Ok(None),
         Some(display) => Ok(Some(ctx.runtime_dir.join(display))),
     }
@@ -131,6 +135,28 @@ fn prepare_wayland(ctx: &EgoContext) -> Result<(), AnyErr> {
     let path = path.unwrap();
     add_file_acl(path.as_path(), ctx.target_uid, ACL_RWX)?;
     println!("Wayland socket '{}' configured", path.display());
+    Ok(())
+}
+
+/// Detect `DISPLAY` and run `xhost` to grant permissions.
+fn prepare_x11(ctx: &EgoContext) -> Result<(), AnyErr> {
+    let display = getenv_optional("DISPLAY")?;
+    if display.is_none() {
+        println!("X11: DISPLAY not set, skipping");
+        return Ok(());
+    }
+
+    let grant = format!("+si:localuser:{}", ctx.target_user);
+    let ret = Command::new("xhost").arg(&grant).output()?;
+    if !ret.status.success() {
+        bail!(
+            "xhost returned {}:\n{}",
+            ret.status.code().unwrap_or(999),
+            String::from_utf8_lossy(&ret.stderr)
+        );
+    }
+
+    println!("X11 configured to allow {}", grant);
     Ok(())
 }
 
