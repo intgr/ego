@@ -1,0 +1,19 @@
+# This Dockerfile is mostly for CI, see .github/workflows/tests.yml
+FROM rust AS ego-build
+
+WORKDIR /root/build
+RUN apt-get update && \
+    apt-get install -y libacl1-dev
+RUN rustup component add rustfmt clippy
+# Build Cargo dependencies for cache
+COPY Cargo.toml ./
+RUN mkdir src/ && \
+	echo "pub fn main() {println!(\"dummy function\")}" > src/lib.rs && \
+	cargo build --release && \
+	rm -f target/release/deps/ego-*
+
+# Make warnings fatal
+ENV RUSTFLAGS="-D warnings"
+# Do the actual build
+COPY src/ src/
+RUN cargo build
