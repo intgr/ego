@@ -266,7 +266,7 @@ fn run_sudo_command(
     envvars: Vec<String>,
     remote_cmd: Vec<String>,
 ) -> Result<(), AnyErr> {
-    if remote_cmd.len() > 0 && remote_cmd[0].starts_with('-') {
+    if !remote_cmd.is_empty() && remote_cmd[0].starts_with('-') {
         bail!(
             "Command may not start with '-' (command is: '{}')",
             remote_cmd[0]
