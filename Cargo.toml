@@ -1,13 +1,19 @@
 [package]
+# TODO figure out whether to use "ego" or "alter-ego"
+# I want command name "ego" but the crates.io package name is already taken. :(
 name = "ego"
 version = "0.1.0"
 edition = "2018"
 
 # Metadata
 authors = ["Marti Raudsepp <marti@juffo.org>"]
-description = "Tool to run Linux desktop applications under a different local user"
+description = "Alter Ego: run Linux desktop applications under a different local user"
 readme = "README.md"
 license = "MIT"
+homepage = "https://github.com/intgr/ego"
+repository = "https://github.com/intgr/ego"
+keywords = ["sudo", "security", "wayland", "pulseaudio"]
+categories = ["command-line-utilities"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
