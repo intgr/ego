@@ -53,7 +53,9 @@ fn main_inner() -> Result<(), AnyErr> {
     }
     // TODO: Set up xdg-desktop-portal-gtk
 
-    run_sudo_command(&ctx, vars, env::args().skip(1).collect());
+    if let Err(msg) = run_sudo_command(&ctx, vars, env::args().skip(1).collect()) {
+        bail!("Error running command: {}", msg);
+    }
 
     Ok(())
 }
@@ -259,11 +261,24 @@ fn ensure_ego_rundir(ctx: &EgoContext) -> Result<PathBuf, AnyErr> {
     Ok(path)
 }
 
-fn run_sudo_command(ctx: &EgoContext, envvars: Vec<String>, remote_cmd: Vec<String>) {
+fn run_sudo_command(
+    ctx: &EgoContext,
+    envvars: Vec<String>,
+    remote_cmd: Vec<String>,
+) -> Result<(), AnyErr> {
+    if remote_cmd.len() > 0 && remote_cmd[0].starts_with('-') {
+        bail!(
+            "Command may not start with '-' (command is: '{}')",
+            remote_cmd[0]
+        );
+    }
+
     let mut args = vec!["-SHiu".to_string(), ctx.target_user.clone()];
     args.extend(envvars);
     args.extend(remote_cmd);
 
     println!("Running command: sudo {}", args.join(" "));
     Command::new("sudo").args(args).exec();
+
+    Ok(())
 }
