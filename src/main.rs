@@ -5,6 +5,7 @@ use std::env;
 use std::env::VarError;
 use std::error::Error;
 use std::os::unix::fs::PermissionsExt;
+use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
 
@@ -50,14 +51,8 @@ fn main_inner() -> Result<(), AnyErr> {
     }
     // TODO: Set up xdg-desktop-portal-gtk
 
-    // TODO: automatically execute? Use sudo?
-    println!("Finished! Run with command:");
-    print!("ssh {}@localhost -- env ", ctx.target_user);
-    for var in vars {
-        // TODO: Escape vars?
-        print!("{} ", var);
-    }
-    println!("CMD");
+    run_sudo_command(&ctx, vars, env::args().skip(1).collect());
+
     Ok(())
 }
 
@@ -204,4 +199,13 @@ fn prepare_pulseaudio_socket(dir: &Path) -> Result<Vec<String>, AnyErr> {
         "PULSE_SERVER=unix:{}",
         path.to_str().unwrap()
     )])
+}
+
+fn run_sudo_command(ctx: &EgoContext, envvars: Vec<String>, remote_cmd: Vec<String>) {
+    let mut args = vec!["-SHiu".to_string(), ctx.target_user.clone()];
+    args.extend(envvars);
+    args.extend(remote_cmd);
+
+    println!("Running command: sudo {}", args.join(" "));
+    Command::new("sudo").args(args).exec();
 }
