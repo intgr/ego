@@ -1,7 +1,7 @@
 [package]
 # TODO figure out whether to use "ego" or "alter-ego"
 # I want command name "ego" but the crates.io package name is already taken. :(
-name = "ego"
+name = "alter-ego"
 version = "0.2.0"
 edition = "2018"
 
