@@ -2,8 +2,6 @@ use super::*;
 
 fn test_context() -> EgoContext {
     EgoContext {
-        cur_user: "me".to_string(),
-        cur_uid: 1000,
         runtime_dir: "/run/user/1000".into(),
         target_user: "ego".into(),
         target_uid: 155,
