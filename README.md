@@ -1,6 +1,8 @@
 ego (a.k.a Alter Ego)
 =====================
 
+[![Tests status](https://github.com/intgr/ego/workflows/Tests/badge.svg?branch=master)](https://github.com/intgr/ego/actions?query=workflow:Tests)
+
 > Do all your games need access to your documents, browser history, SSH private keys?
 >
 > ... No? Just run `ego steam`!
