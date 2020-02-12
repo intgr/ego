@@ -1,15 +1,17 @@
 #[macro_use]
 extern crate simple_error;
 
-use std::env;
 use std::env::VarError;
 use std::error::Error;
+use std::fs::DirBuilder;
+use std::os::unix::fs::DirBuilderExt;
 use std::os::unix::fs::PermissionsExt;
 use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
+use std::{env, fs};
 
-use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_RWX};
+use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
 use simple_error::SimpleError;
 use users::{get_user_by_name, uid_t};
 
@@ -172,14 +174,14 @@ fn prepare_pulseaudio(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
     }
     add_file_acl(path.as_path(), ctx.target_uid, ACL_EXECUTE)?;
 
-    let envs = prepare_pulseaudio_socket(path.as_path())?;
-    // TODO: Automatically set up PulseAudio cookie
+    let mut envs = prepare_pulseaudio_socket(path.as_path())?;
+    envs.extend(prepare_pulseaudio_cookie(ctx)?);
 
     println!("PulseAudio dir '{}' configured", path.display());
     Ok(envs)
 }
 
-/// Check permissions of PulseAudio socket `/run/user/1000/pulse/native`
+/// Ensure permissions of PulseAudio socket `/run/user/1000/pulse/native`
 fn prepare_pulseaudio_socket(dir: &Path) -> Result<Vec<String>, AnyErr> {
     let path = dir.join("native");
     let meta = path.metadata();
@@ -199,6 +201,62 @@ fn prepare_pulseaudio_socket(dir: &Path) -> Result<Vec<String>, AnyErr> {
         "PULSE_SERVER=unix:{}",
         path.to_str().unwrap()
     )])
+}
+
+/// Try various ways to discover the current user's PulseAudio authentication cookie.
+fn find_pulseaudio_cookie() -> Result<PathBuf, AnyErr> {
+    // Try PULSE_COOKIE
+    if let Some(path) = getenv_optional("PULSE_COOKIE")? {
+        return Ok(PathBuf::from(path));
+    }
+    // Try ~/.config/pulse/cookie
+    let home = getenv_path("HOME")?;
+    let path = home.join(".config/pulse/cookie");
+    if path.is_file() {
+        return Ok(path);
+    }
+
+    // Try ~/.pulse-cookie, for older PulseAudio versions
+    let path = home.join(".pulse-cookie");
+    if path.is_file() {
+        return Ok(path);
+    }
+
+    bail!(
+        "Cannot locate PulseAudio cookie \
+        (tried $PULSE_COOKIE, ~/.config/pulse/cookie, ~/.pulse-cookie)"
+    )
+}
+
+/// Publish current user's pulse-cookie for target user
+fn prepare_pulseaudio_cookie(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
+    let cookie_path = find_pulseaudio_cookie()?;
+    let target_path = ensure_ego_rundir(ctx)?.join("pulse-cookie");
+    println!(
+        "Publishing PulseAudio cookie {} to {}",
+        cookie_path.display(),
+        target_path.display()
+    );
+    fs::copy(cookie_path.as_path(), target_path.as_path())?;
+    add_file_acl(target_path.as_path(), ctx.target_uid, ACL_READ)?;
+
+    Ok(vec![format!(
+        "PULSE_COOKIE={}",
+        target_path.to_str().unwrap()
+    )])
+}
+
+/// Create runtime dir for Ego itself (e.g. `/run/user/1000/ego`) and make it readable for target
+/// user. This directory us used to share state (e.g. PulseAudio auth cookie).
+fn ensure_ego_rundir(ctx: &EgoContext) -> Result<PathBuf, AnyErr> {
+    // XXX We assume that prepare_runtime_dir() has already been called.
+    let path = ctx.runtime_dir.join("ego");
+    if !path.is_dir() {
+        DirBuilder::new().mode(0o700).create(path.as_path())?;
+    }
+    // Set ACL either way, because target user may be different in every run.
+    add_file_acl(path.as_path(), ctx.target_uid, ACL_EXECUTE)?;
+    Ok(path)
 }
 
 fn run_sudo_command(ctx: &EgoContext, envvars: Vec<String>, remote_cmd: Vec<String>) {
