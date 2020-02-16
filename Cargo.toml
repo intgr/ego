@@ -20,3 +20,4 @@ categories = ["command-line-utilities"]
 users = "0.9.1"
 simple-error = "0.2.1"
 posix-acl = "0.2.0"
+clap = "2.33.0"
