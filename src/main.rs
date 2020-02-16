@@ -12,7 +12,7 @@ use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
 use std::{env, fs};
 
-use clap::{App, AppSettings, Arg};
+use clap::{App, AppSettings, Arg, ArgGroup};
 use log::{debug, error, info, Level};
 use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
 use simple_error::SimpleError;
@@ -30,10 +30,17 @@ struct EgoContext {
     target_uid: uid_t,
 }
 
+#[derive(Debug, PartialEq)]
+enum Method {
+    Sudo,
+    Machinectl,
+}
+
 struct Args {
     user: String,
     command: Vec<String>,
     log_level: log::Level,
+    method: Method,
 }
 
 fn parse_args<T: Into<OsString> + Clone>(args: impl IntoIterator<Item = T>) -> Args {
@@ -49,6 +56,17 @@ fn parse_args<T: Into<OsString> + Clone>(args: impl IntoIterator<Item = T>) -> A
                 .help("Specify a username (default: ego)")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("sudo")
+                .long("sudo")
+                .help("Use 'sudo' to change user (default)"),
+        )
+        .arg(
+            Arg::with_name("machinectl")
+                .long("machinectl")
+                .help("Use 'machinectl' to change user"),
+        )
+        .group(ArgGroup::with_name("method").args(&["sudo", "machinectl"]))
         .arg(
             Arg::with_name("command")
                 .help("Command name and arguments to run (default: user shell)")
@@ -75,6 +93,11 @@ fn parse_args<T: Into<OsString> + Clone>(args: impl IntoIterator<Item = T>) -> A
             1 => Level::Info,
             2 => Level::Debug,
             _ => Level::Trace,
+        },
+        method: if matches.is_present("machinectl") {
+            Method::Machinectl
+        } else {
+            Method::Sudo
         },
     }
 }
@@ -109,8 +132,12 @@ fn main_inner() -> Result<(), AnyErr> {
     }
     // TODO: Set up xdg-desktop-portal-gtk
 
-    if let Err(msg) = run_sudo_command(&ctx, vars, args.command) {
-        bail!("Error running command: {}", msg);
+    let ret = match args.method {
+        Method::Sudo => run_sudo_command(&ctx, vars, args.command),
+        Method::Machinectl => run_machinectl_command(&ctx, vars, args.command),
+    };
+    if let Err(msg) = ret {
+        bail!("Error changing user: {}", msg);
     }
 
     Ok(())
@@ -335,6 +362,24 @@ fn run_sudo_command(
 
     info!("Running command: sudo {}", args.join(" "));
     Command::new("sudo").args(args).exec();
+
+    Ok(())
+}
+
+fn run_machinectl_command(
+    ctx: &EgoContext,
+    envvars: Vec<String>,
+    remote_cmd: Vec<String>,
+) -> Result<(), AnyErr> {
+    let mut args = vec!["shell".to_string()];
+    args.push(format!("--uid={}", ctx.target_user));
+    args.extend(envvars.iter().map(|v| format!("-E{}", v)));
+    args.push("--".to_string());
+    args.push(".host".to_string());
+    args.extend(remote_cmd);
+
+    info!("Running command: machinectl {}", args.join(" "));
+    Command::new("machinectl").args(args).exec();
 
     Ok(())
 }
