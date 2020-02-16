@@ -13,12 +13,14 @@ use std::process::{exit, Command};
 use std::{env, fs};
 
 use clap::{App, AppSettings, Arg};
+use log::{debug, error, info, Level};
 use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
 use simple_error::SimpleError;
 use users::{get_user_by_name, uid_t};
 
 type AnyErr = Box<dyn Error>;
 
+mod logging;
 #[cfg(test)]
 mod tests;
 
@@ -31,6 +33,7 @@ struct EgoContext {
 struct Args {
     user: String,
     command: Vec<String>,
+    log_level: log::Level,
 }
 
 fn parse_args<T: Into<OsString> + Clone>(args: impl IntoIterator<Item = T>) -> Args {
@@ -51,6 +54,13 @@ fn parse_args<T: Into<OsString> + Clone>(args: impl IntoIterator<Item = T>) -> A
                 .help("Command name and arguments to run (default: user shell)")
                 .multiple(true),
         )
+        .arg(
+            Arg::with_name("verbose")
+                .short("v")
+                .long("verbose")
+                .multiple(true)
+                .help("Verbose output. Use multiple times for more output."),
+        )
         .get_matches_from(args);
 
     Args {
@@ -60,14 +70,23 @@ fn parse_args<T: Into<OsString> + Clone>(args: impl IntoIterator<Item = T>) -> A
             .unwrap_or_default()
             .map(|v| v.to_string())
             .collect(),
+        log_level: match matches.occurrences_of("verbose") {
+            0 => Level::Warn,
+            1 => Level::Info,
+            2 => Level::Debug,
+            _ => Level::Trace,
+        },
     }
 }
 
 fn main_inner() -> Result<(), AnyErr> {
     let args = parse_args(Box::new(env::args()));
+    logging::init_with_level(args.log_level);
+
     let mut vars: Vec<String> = Vec::new();
     let ctx = create_context(args.user)?;
-    println!(
+
+    info!(
         "Setting up Alter Ego for user {} ({})",
         ctx.target_user, ctx.target_uid
     );
@@ -100,7 +119,7 @@ fn main_inner() -> Result<(), AnyErr> {
 fn main() {
     let ret = main_inner();
     if let Err(msg) = ret {
-        eprintln!("Error: {}", msg);
+        error!("{}", msg);
         exit(1);
     }
 }
@@ -148,7 +167,7 @@ fn prepare_runtime_dir(ctx: &EgoContext) -> Result<(), SimpleError> {
         bail!("'{}' is not a directory", path.display());
     }
     add_file_acl(path, ctx.target_uid, ACL_EXECUTE)?;
-    println!("Runtime data dir '{}' configured", path.display());
+    debug!("Runtime data dir '{}' configured", path.display());
     Ok(())
 }
 
@@ -166,14 +185,14 @@ fn get_wayland_socket(ctx: &EgoContext) -> Result<Option<PathBuf>, AnyErr> {
 fn prepare_wayland(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
     let path = get_wayland_socket(ctx)?;
     if path.is_none() {
-        println!("Wayland: WAYLAND_DISPLAY not set, skipping");
+        debug!("Wayland: WAYLAND_DISPLAY not set, skipping");
         return Ok(vec![]);
     }
 
     let path = path.unwrap();
     add_file_acl(path.as_path(), ctx.target_uid, ACL_RWX)?;
 
-    println!("Wayland socket '{}' configured", path.display());
+    debug!("Wayland socket '{}' configured", path.display());
     Ok(vec![format!("WAYLAND_DISPLAY={}", path.to_str().unwrap())])
 }
 
@@ -182,7 +201,7 @@ fn prepare_wayland(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
 fn prepare_x11(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
     let display = getenv_optional("DISPLAY")?;
     if display.is_none() {
-        println!("X11: DISPLAY not set, skipping");
+        debug!("X11: DISPLAY not set, skipping");
         return Ok(vec![]);
     }
 
@@ -197,7 +216,7 @@ fn prepare_x11(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
     }
     // TODO should also test /tmp/.X11-unix/X0 permissions?
 
-    println!("X11 configured to allow {}", grant);
+    debug!("X11 configured to allow {}", grant);
     Ok(vec![format!("DISPLAY={}", display.unwrap())])
 }
 
@@ -208,7 +227,7 @@ fn prepare_x11(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
 fn prepare_pulseaudio(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
     let path = ctx.runtime_dir.join("pulse");
     if !path.is_dir() {
-        println!("PulseAudio dir '{}' not found, skipping", path.display());
+        debug!("PulseAudio dir '{}' not found, skipping", path.display());
         return Ok(vec![]);
     }
     add_file_acl(path.as_path(), ctx.target_uid, ACL_EXECUTE)?;
@@ -216,7 +235,7 @@ fn prepare_pulseaudio(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
     let mut envs = prepare_pulseaudio_socket(path.as_path())?;
     envs.extend(prepare_pulseaudio_cookie(ctx)?);
 
-    println!("PulseAudio dir '{}' configured", path.display());
+    debug!("PulseAudio dir '{}' configured", path.display());
     Ok(envs)
 }
 
@@ -271,7 +290,7 @@ fn find_pulseaudio_cookie() -> Result<PathBuf, AnyErr> {
 fn prepare_pulseaudio_cookie(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
     let cookie_path = find_pulseaudio_cookie()?;
     let target_path = ensure_ego_rundir(ctx)?.join("pulse-cookie");
-    println!(
+    debug!(
         "Publishing PulseAudio cookie {} to {}",
         cookie_path.display(),
         target_path.display()
@@ -314,7 +333,7 @@ fn run_sudo_command(
     args.extend(envvars);
     args.extend(remote_cmd);
 
-    println!("Running command: sudo {}", args.join(" "));
+    info!("Running command: sudo {}", args.join(" "));
     Command::new("sudo").args(args).exec();
 
     Ok(())
