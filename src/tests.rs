@@ -38,6 +38,7 @@ fn test_parse_args() {
     let args = parse_args(vec!["ego"]);
     assert_eq!(args.user, "ego".to_string());
     assert_eq!(args.command, string_vec![]);
+    assert_eq!(args.log_level, Level::Warn);
 
     // --user
     assert_eq!(
@@ -49,4 +50,8 @@ fn test_parse_args() {
         parse_args(vec!["ego", "ls", "-la"]).command,
         string_vec!["ls", "-la"]
     );
+    // verbosity
+    assert_eq!(parse_args(vec!["ego", "-v"]).log_level, Level::Info);
+    assert_eq!(parse_args(vec!["ego", "-v", "-v"]).log_level, Level::Debug);
+    assert_eq!(parse_args(vec!["ego", "-vvvvvv"]).log_level, Level::Trace);
 }
