@@ -1,5 +1,10 @@
 use super::*;
 
+/// `vec![]` constructor that converts arguments to String
+macro_rules! string_vec {
+    ($($x:expr),*) => (vec![$($x.to_string()),*] as Vec<String>);
+}
+
 fn test_context() -> EgoContext {
     EgoContext {
         runtime_dir: "/run/user/1000".into(),
@@ -24,5 +29,24 @@ fn wayland_socket() {
     assert_eq!(
         get_wayland_socket(&ctx).unwrap().unwrap(),
         PathBuf::from("/tmp/wayland-7")
+    );
+}
+
+#[test]
+fn test_parse_args() {
+    // Empty command line (defaults)
+    let args = parse_args(vec!["ego"]);
+    assert_eq!(args.user, "ego".to_string());
+    assert_eq!(args.command, string_vec![]);
+
+    // --user
+    assert_eq!(
+        parse_args(vec!["ego", "-u", "myself"]).user,
+        "myself".to_string()
+    );
+    // command with -flags
+    assert_eq!(
+        parse_args(vec!["ego", "ls", "-la"]).command,
+        string_vec!["ls", "-la"]
     );
 }

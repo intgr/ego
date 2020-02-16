@@ -3,6 +3,7 @@ extern crate simple_error;
 
 use std::env::VarError;
 use std::error::Error;
+use std::ffi::OsString;
 use std::fs::DirBuilder;
 use std::os::unix::fs::DirBuilderExt;
 use std::os::unix::fs::PermissionsExt;
@@ -11,6 +12,7 @@ use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
 use std::{env, fs};
 
+use clap::{App, AppSettings, Arg};
 use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
 use simple_error::SimpleError;
 use users::{get_user_by_name, uid_t};
@@ -26,10 +28,45 @@ struct EgoContext {
     target_uid: uid_t,
 }
 
+struct Args {
+    user: String,
+    command: Vec<String>,
+}
+
+fn parse_args<T: Into<OsString> + Clone>(args: impl IntoIterator<Item = T>) -> Args {
+    let matches = App::new("Alter Ego: run desktop applications under a different local user")
+        .setting(AppSettings::TrailingVarArg)
+        .setting(AppSettings::DisableVersion)
+        .setting(AppSettings::ColoredHelp)
+        .arg(
+            Arg::with_name("user")
+                .short("u")
+                .long("user")
+                .value_name("USER")
+                .help("Specify a username (default: ego)")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("command")
+                .help("Command name and arguments to run (default: user shell)")
+                .multiple(true),
+        )
+        .get_matches_from(args);
+
+    Args {
+        user: matches.value_of("user").unwrap_or("ego").to_string(),
+        command: matches
+            .values_of("command")
+            .unwrap_or_default()
+            .map(|v| v.to_string())
+            .collect(),
+    }
+}
+
 fn main_inner() -> Result<(), AnyErr> {
+    let args = parse_args(Box::new(env::args()));
     let mut vars: Vec<String> = Vec::new();
-    let username = "ego"; // TODO: take username as argument
-    let ctx = create_context(username)?;
+    let ctx = create_context(args.user)?;
     println!(
         "Setting up Alter Ego for user {} ({})",
         ctx.target_user, ctx.target_uid
@@ -53,7 +90,7 @@ fn main_inner() -> Result<(), AnyErr> {
     }
     // TODO: Set up xdg-desktop-portal-gtk
 
-    if let Err(msg) = run_sudo_command(&ctx, vars, env::args().skip(1).collect()) {
+    if let Err(msg) = run_sudo_command(&ctx, vars, args.command) {
         bail!("Error running command: {}", msg);
     }
 
@@ -87,12 +124,12 @@ fn getenv_path(key: &str) -> Result<PathBuf, SimpleError> {
     }
 }
 
-fn create_context(username: &str) -> Result<EgoContext, AnyErr> {
+fn create_context(username: String) -> Result<EgoContext, AnyErr> {
     let user = require_with!(get_user_by_name(&username), "Unknown user '{}'", username);
     let runtime_dir = getenv_path("XDG_RUNTIME_DIR")?;
     Ok(EgoContext {
         runtime_dir,
-        target_user: username.to_string(),
+        target_user: username,
         target_uid: user.uid(),
     })
 }
