@@ -39,6 +39,7 @@ fn test_parse_args() {
     assert_eq!(args.user, "ego".to_string());
     assert_eq!(args.command, string_vec![]);
     assert_eq!(args.log_level, Level::Warn);
+    assert_eq!(args.method, Method::Sudo);
 
     // --user
     assert_eq!(
@@ -54,4 +55,9 @@ fn test_parse_args() {
     assert_eq!(parse_args(vec!["ego", "-v"]).log_level, Level::Info);
     assert_eq!(parse_args(vec!["ego", "-v", "-v"]).log_level, Level::Debug);
     assert_eq!(parse_args(vec!["ego", "-vvvvvv"]).log_level, Level::Trace);
+    // --machinectl
+    assert_eq!(
+        parse_args(vec!["ego", "--machinectl"]).method,
+        Method::Machinectl
+    );
 }
