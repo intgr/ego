@@ -17,6 +17,7 @@ use log::{debug, error, info, Level};
 use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
 use simple_error::SimpleError;
 use users::{get_user_by_name, uid_t};
+use which::which;
 
 type AnyErr = Box<dyn Error>;
 
@@ -376,7 +377,19 @@ fn run_machinectl_command(
     args.extend(envvars.iter().map(|v| format!("-E{}", v)));
     args.push("--".to_string());
     args.push(".host".to_string());
-    args.extend(remote_cmd);
+
+    if !remote_cmd.is_empty() {
+        let cmd = &remote_cmd[0];
+        if cmd.starts_with('/') {
+            // OK, command name already absolute.
+            args.extend(remote_cmd)
+        } else {
+            // machinectl requires absolute executable path, resolve it...
+            let path = try_with!(which(cmd), "Cannot find executable '{}'", cmd);
+            args.push(path.to_str().expect("Invalid path").into());
+            args.extend(remote_cmd.iter().skip(1).cloned());
+        }
+    }
 
     info!("Running command: machinectl {}", args.join(" "));
     Command::new("machinectl").args(args).exec();
