@@ -6,7 +6,10 @@ function _ego {
     _arguments -C \
         {-h,--help}'[Show help information]' \
         {-u+,--user=}'[Specify a username]:user:_users' \
-        {-v,--verbose}'[Verbouse output]' \
+        {-v,--verbose}'[Verbose output]' \
+        '--sudo[Execute using sudo]' \
+        '--machinectl[Execute using machinectl]' \
+        '--[]' \
         '(-)1:command: _command_names -e' \
         '*::arguments: _normal'
 }
