@@ -6,7 +6,7 @@ RUN apt-get update && \
     apt-get install -y libacl1-dev
 RUN rustup component add rustfmt clippy
 # Build Cargo dependencies for cache
-COPY Cargo.toml ./
+COPY Cargo.toml Cargo.lock ./
 RUN mkdir src/ && \
 	echo "pub fn main() {println!(\"dummy function\")}" > src/lib.rs && \
 	cargo build --release && \
