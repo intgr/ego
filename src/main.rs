@@ -17,7 +17,6 @@ use log::{debug, error, info, Level};
 use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
 use simple_error::SimpleError;
 use users::{get_user_by_name, uid_t};
-
 use which::which;
 
 type AnyErr = Box<dyn Error>;
