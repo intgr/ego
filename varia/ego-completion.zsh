@@ -7,6 +7,7 @@ function _ego {
         {-h,--help}'[Show help information]' \
         {-u+,--user=}'[Specify a username]:user:_users' \
         {-v,--verbose}'[Verbose output]' \
+        {-vv,-vvv}'[More verbose]' \
         '--sudo[Execute using sudo]' \
         '--machinectl[Execute using machinectl]' \
         '--[]' \
