@@ -1,7 +1,7 @@
 ego (a.k.a Alter Ego)
 =====================
 
-[![Crates.io version](https://img.shields.io/crates/v/alter-ego.svg)](https://crates.io/crates/alter-ego)
+[![Crates.io version](https://img.shields.io/crates/v/ego.svg)](https://crates.io/crates/ego)
 [![Tests status](https://github.com/intgr/ego/workflows/Tests/badge.svg?branch=master)](https://github.com/intgr/ego/actions?query=workflow:Tests)
 
 > Do all your games need access to your documents, browser history, SSH private keys?
@@ -23,16 +23,16 @@ The goal of ego is to come with sane defaults and be as easy as possible to set 
 
 1. Make sure you [have Rust installed](https://www.rust-lang.org/tools/install) and run:
 
-        cargo build --release
-        sudo cp ./target/release/ego /usr/local/bin/
+       cargo install ego
+       sudo cp ./.cargo/bin/ego /usr/local/bin/
 
 2. Create local user named "ego": <sup>[1]</sup>
 
-        sudo useradd ego --uid 155 --create-home
+       sudo useradd ego --uid 155 --create-home
 
 3. That's all, try it:
 
-        ego xdg-open .
+       ego xdg-open .
 
 To avoid entering the password for sudo, add this to `/etc/sudoers` file (replace `<myname>` with
 your own username):
@@ -42,7 +42,9 @@ your own username):
 [1] No extra groups are necessary for typical usage. UID below 1000 hides this user on the login
     screen.
 
-Metadata
+Appendix
 --------
 Ego is licensed under the MIT License (see the `LICENSE` file). Ego was created by Marti Raudsepp.
 Ego's primary website is at https://github.com/intgr/ego
+
+Thanks to Alexander Payne (myrrlyn) for relinquishing the unused "ego" crate name.
