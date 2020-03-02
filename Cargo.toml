@@ -1,17 +1,17 @@
 [package]
-name = "ego"
+name = "alter-ego"
 version = "0.3.0"
 edition = "2018"
 
 # Metadata
 authors = ["Marti Raudsepp <marti@juffo.org>"]
-description = "Alter Ego: run Linux desktop applications under a different local user"
+description = "This crate has moved: https://crates.io/crates/ego"
 readme = "README.md"
 license = "MIT"
 homepage = "https://github.com/intgr/ego"
 repository = "https://github.com/intgr/ego"
-keywords = ["sudo", "security", "wayland", "pulseaudio"]
-categories = ["command-line-utilities"]
+keywords = []
+categories = []
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]

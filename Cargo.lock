@@ -10,6 +10,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "alter-ego"
+version = "0.3.0"
+dependencies = [
+ "ansi_term 0.12.1",
+ "clap",
+ "log",
+ "posix-acl",
+ "simple-error",
+ "users",
+ "which",
+]
+
+[[package]]
 name = "ansi_term"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -63,19 +76,6 @@ dependencies = [
  "textwrap",
  "unicode-width",
  "vec_map",
-]
-
-[[package]]
-name = "ego"
-version = "0.3.0"
-dependencies = [
- "ansi_term 0.12.1",
- "clap",
- "log",
- "posix-acl",
- "simple-error",
- "users",
- "which",
 ]
 
 [[package]]
