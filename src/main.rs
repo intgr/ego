@@ -2,7 +2,6 @@
 extern crate simple_error;
 
 use std::env::VarError;
-use std::error::Error;
 use std::ffi::OsString;
 use std::fs::DirBuilder;
 use std::os::unix::fs::DirBuilderExt;
@@ -12,15 +11,15 @@ use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
 use std::{env, fs};
 
+use crate::errors::{print_error, AnyErr, ErrorWithHint};
 use clap::{App, AppSettings, Arg, ArgGroup};
-use log::{debug, error, info, Level};
+use log::{debug, info, Level};
 use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
 use simple_error::SimpleError;
-use users::{get_user_by_name, uid_t};
+use users::{get_user_by_name, get_user_by_uid, uid_t};
 use which::which;
 
-type AnyErr = Box<dyn Error>;
-
+mod errors;
 mod logging;
 #[cfg(test)]
 mod tests;
@@ -146,8 +145,8 @@ fn main_inner() -> Result<(), AnyErr> {
 
 fn main() {
     let ret = main_inner();
-    if let Err(msg) = ret {
-        error!("{}", msg);
+    if let Err(err) = ret {
+        print_error(err);
         exit(1);
     }
 }
@@ -171,13 +170,43 @@ fn getenv_path(key: &str) -> Result<PathBuf, SimpleError> {
     }
 }
 
+/// Get UID for *target* user, also formats a nice user-friendly message with instructions.
+fn get_target_uid(username: &str) -> Result<uid_t, ErrorWithHint> {
+    if let Some(user) = get_user_by_name(&username) {
+        return Ok(user.uid());
+    }
+
+    let mut hint = "Specify different user with --user= or create a new user".to_string();
+
+    // Find a free UID for a helpful error message.
+    // UIDs >=1000 are visible on login screen, so better avoid them.
+    //
+    // https://refspecs.linuxfoundation.org/LSB_5.0.0/LSB-Core-generic/LSB-Core-generic/uidrange.html
+    // > The system User IDs from 100 to 499 should be reserved for dynamic allocation by system
+    // > administrators and post install scripts using useradd.
+    for uid in 150..=499 {
+        if get_user_by_uid(uid).is_none() {
+            hint = format!(
+                "{} with the command:\n    sudo useradd '{}' --uid {} --create-home",
+                hint, username, uid
+            );
+            break;
+        }
+    }
+
+    Err(ErrorWithHint::new(
+        format!("Unknown user '{}'", username),
+        hint,
+    ))
+}
+
 fn create_context(username: String) -> Result<EgoContext, AnyErr> {
-    let user = require_with!(get_user_by_name(&username), "Unknown user '{}'", username);
+    let uid = get_target_uid(&username)?;
     let runtime_dir = getenv_path("XDG_RUNTIME_DIR")?;
     Ok(EgoContext {
         runtime_dir,
         target_user: username,
-        target_uid: user.uid(),
+        target_uid: uid,
     })
 }
 
