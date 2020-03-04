@@ -1,3 +1,2 @@
 /target
-**/*.rs.bk
-_local/
+_local
