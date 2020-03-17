@@ -67,7 +67,7 @@ dependencies = [
 
 [[package]]
 name = "ego"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "ansi_term 0.12.1",
  "clap",
@@ -104,9 +104,9 @@ dependencies = [
 
 [[package]]
 name = "posix-acl"
-version = "0.3.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50e24cf28f3b81293e7b945539f6d8a1172f1b945b8424336871950f1037d2df"
+checksum = "2216f66207711fe7e5ce63ab5e55bfbf2abf5198d3b530c997e620fed28a2e8d"
 dependencies = [
  "acl-sys",
  "libc",
@@ -157,9 +157,9 @@ checksum = "05c78687fb1a80548ae3250346c3db86a80a7cdd77bda190189f2d0a0987c81a"
 
 [[package]]
 name = "which"
-version = "3.1.0"
+version = "3.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5475d47078209a02e60614f7ba5e645ef3ed60f771920ac1906d7c1cc65024c8"
+checksum = "d011071ae14a2f6671d0b74080ae0cd8ebf3a6f8c9589a2cd45f23126fe29724"
 dependencies = [
  "libc",
 ]
