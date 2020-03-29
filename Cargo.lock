@@ -2,9 +2,9 @@
 # It is not intended for manual editing.
 [[package]]
 name = "acl-sys"
-version = "1.2.0"
+version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3888436c021a36a57319a45a0e287fc1e317a4b357fc9552c16d16caa3daf1e4"
+checksum = "87840397fbcfe7a5488c3055ba689840dd9dbad0325c00badaf1c1ccf50aa934"
 dependencies = [
  "libc",
 ]
@@ -80,18 +80,18 @@ dependencies = [
 
 [[package]]
 name = "hermit-abi"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1010591b26bbfe835e9faeabeb11866061cc7dcebffd56ad7d0942d0e61aefd8"
+checksum = "0ebe6e23502442c4c9cd80fcb8bdf867dc5f4a9e9f1d882499fa49c5ed83e559"
 dependencies = [
  "libc",
 ]
 
 [[package]]
 name = "libc"
-version = "0.2.67"
+version = "0.2.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb147597cdf94ed43ab7a9038716637d2d1bf2bc571da995d0028dec06bd3018"
+checksum = "dea0c0405123bba743ee3f91f49b1c7cfb684eef0da0a50110f758ccf24cdff0"
 
 [[package]]
 name = "log"
@@ -104,13 +104,12 @@ dependencies = [
 
 [[package]]
 name = "posix-acl"
-version = "0.5.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2216f66207711fe7e5ce63ab5e55bfbf2abf5198d3b530c997e620fed28a2e8d"
+checksum = "2ea5dae99e4365fa738533b43f4c649c0450ba7fbb81a984a4fba6a42ce91812"
 dependencies = [
  "acl-sys",
  "libc",
- "simple-error",
 ]
 
 [[package]]

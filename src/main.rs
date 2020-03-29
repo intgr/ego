@@ -210,7 +210,7 @@ fn create_context(username: String) -> Result<EgoContext, AnyErr> {
     })
 }
 
-fn add_file_acl(path: &Path, uid: u32, flags: u32) -> Result<(), SimpleError> {
+fn add_file_acl(path: &Path, uid: u32, flags: u32) -> Result<(), AnyErr> {
     let mut acl = PosixACL::read_acl(path)?;
     acl.set(Qualifier::User(uid), flags);
     acl.write_acl(path)?;
@@ -218,7 +218,7 @@ fn add_file_acl(path: &Path, uid: u32, flags: u32) -> Result<(), SimpleError> {
 }
 
 /// Add execute perm to runtime dir, e.g. `/run/user/1000`
-fn prepare_runtime_dir(ctx: &EgoContext) -> Result<(), SimpleError> {
+fn prepare_runtime_dir(ctx: &EgoContext) -> Result<(), AnyErr> {
     let path = &ctx.runtime_dir;
     if !path.is_dir() {
         bail!("'{}' is not a directory", path.display());
