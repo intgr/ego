@@ -17,10 +17,10 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Build
-        run: docker build . -f varia/Dockerfile.tests --tag ego-build
+        run: docker build . --pull -f varia/Dockerfile.tests --tag ego-build
       - name: Test suite
-        run: docker run ego-build cargo test --color=always
+        run: docker run --rm ego-build cargo test --color=always
       - name: Clippy lints
-        run: docker run ego-build cargo clippy --color=always
+        run: docker run --rm ego-build cargo clippy --color=always
       - name: rustfmt
-        run: docker run ego-build rustfmt --color=always --check **/*.rs
+        run: docker run --rm ego-build cargo fmt -- --color=always --check

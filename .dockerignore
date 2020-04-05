@@ -1,0 +1,6 @@
+/target
+_local
+.idea
+.git
+.github
+varia/Dockerfile.tests

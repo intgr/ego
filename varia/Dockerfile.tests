@@ -2,18 +2,21 @@
 FROM rust AS ego-build
 
 WORKDIR /root/build
+# Make warnings fatal
+ENV RUSTFLAGS="-D warnings"
+
 RUN apt-get update && \
-    apt-get install -y libacl1-dev
+    apt-get install -y libacl1-dev && \
+    rm -rf /var/lib/apt/lists/*
 RUN rustup component add rustfmt clippy
 # Build Cargo dependencies for cache
 COPY Cargo.toml Cargo.lock ./
 RUN mkdir src/ && \
-	echo "pub fn main() {println!(\"dummy function\")}" > src/lib.rs && \
-	cargo build --release && \
-	rm -f target/release/deps/ego-*
+	echo "pub fn main() {println!(\"dummy function\")}" > src/main.rs && \
+	cargo build --bins --tests --color=always && \
+	rm -rdv target/*/deps/ego-* \
+	        target/*/.fingerprint/ego-*
 
-# Make warnings fatal
-ENV RUSTFLAGS="-D warnings"
 # Do the actual build
-COPY src/ src/
-RUN cargo build
+COPY . .
+RUN cargo build --bins --tests --color=always
