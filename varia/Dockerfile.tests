@@ -12,7 +12,7 @@ RUN rustup component add rustfmt clippy
 # Build Cargo dependencies for cache
 COPY Cargo.toml Cargo.lock ./
 RUN mkdir src/ && \
-	echo "pub fn main() {println!(\"dummy function\")}" > src/lib.rs && \
+	echo "pub fn main() {println!(\"dummy function\")}" > src/main.rs && \
 	cargo build --bins --tests --color=always && \
 	rm -rdv target/*/deps/ego-* \
 	        target/*/.fingerprint/ego-*
