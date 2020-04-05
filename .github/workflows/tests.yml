@@ -23,4 +23,4 @@ jobs:
       - name: Clippy lints
         run: docker run --rm ego-build cargo clippy --color=always
       - name: rustfmt
-        run: docker run --rm ego-build rustfmt --color=always --check **/*.rs
+        run: docker run --rm ego-build cargo fmt -- --color=always --check
