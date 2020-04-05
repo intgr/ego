@@ -1,10 +1,10 @@
 # This Dockerfile is mostly for CI, see .github/workflows/tests.yml
 FROM rust AS ego-build
 
+WORKDIR /root/build
 # Make warnings fatal
 ENV RUSTFLAGS="-D warnings"
 
-WORKDIR /root/build
 RUN apt-get update && \
     apt-get install -y libacl1-dev && \
     rm -rf /var/lib/apt/lists/*
@@ -13,7 +13,9 @@ RUN rustup component add rustfmt clippy
 COPY Cargo.toml Cargo.lock ./
 RUN mkdir src/ && \
 	echo "pub fn main() {println!(\"dummy function\")}" > src/lib.rs && \
-	cargo build --bins --tests --color=always
+	cargo build --bins --tests --color=always && \
+	rm -rdv target/*/deps/ego-* \
+	        target/*/.fingerprint/ego-*
 
 # Do the actual build
 COPY . .
