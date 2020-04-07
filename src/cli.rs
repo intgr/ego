@@ -1,4 +1,4 @@
-use clap::{App, AppSettings, Arg, ArgGroup};
+use clap::{App, AppSettings, Arg, ArgGroup, ValueHint};
 use log::Level;
 use std::ffi::OsString;
 
@@ -26,9 +26,11 @@ pub fn build_cli() -> App<'static> {
             Arg::new("user")
                 .short('u')
                 .long("user")
+                .about("Specify a username (default: ego)")
                 .value_name("USER")
                 .about("Specify a username (default: ego)")
-                .takes_value(true),
+                .takes_value(true)
+                .value_hint(ValueHint::Username),
         )
         .arg(
             Arg::new("sudo")
@@ -49,7 +51,8 @@ pub fn build_cli() -> App<'static> {
         .arg(
             Arg::new("command")
                 .about("Command name and arguments to run (default: user shell)")
-                .multiple(true),
+                .multiple(true)
+                .value_hint(ValueHint::CommandWithArguments),
         )
         .arg(
             Arg::new("verbose")

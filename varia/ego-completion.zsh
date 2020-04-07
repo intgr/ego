@@ -1,18 +1,40 @@
-#compdef _ego ego
-# To make this autocompletion discoverable by zsh, run:
-#   sudo cp varia/ego-completion.zsh /usr/local/share/zsh/site-functions/_ego
+#compdef ego
 
-function _ego {
-    _arguments -C \
-        {-h,--help}'[Show help information]' \
-        {-u+,--user=}'[Specify a username]:user:_users' \
-        {-v,--verbose}'[Verbose output]' \
-        '--sudo[Execute using sudo]' \
-        '--machinectl[Execute using machinectl]' \
-        '--machinectl-bare[Execute using machinectl but skip xdg-desktop-portal setup]' \
-        '--[]' \
-        '(-)1:command: _command_names -e' \
-        '*::arguments: _normal'
+autoload -U is-at-least
+
+_ego() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" \
+'-u+[Specify a username (default: ego)]: :_users' \
+'--user=[Specify a username (default: ego)]: :_users' \
+'--sudo[Use '\''sudo'\'' to change user (default)]' \
+'--machinectl[Use '\''machinectl'\'' to change user]' \
+'--machinectl-bare[Use '\''machinectl'\'' but skip xdg-desktop-portal setup]' \
+'*-v[Verbose output. Use multiple times for more output.]' \
+'*--verbose[Verbose output. Use multiple times for more output.]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'*::command -- Command name and arguments to run (default\: user shell):_cmdambivalent' \
+&& ret=0
+    
 }
 
-_ego
+(( $+functions[_ego_commands] )) ||
+_ego_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'ego commands' commands "$@"
+}
+
+_ego "$@"

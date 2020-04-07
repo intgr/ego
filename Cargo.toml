@@ -22,3 +22,10 @@ clap = "3.0.0-beta.2"
 log = {version = "0.4.11", features = ["std"]}
 ansi_term = "0.12.1"
 shell-words = "1.0.0"
+
+[features]
+default = []
+update-snapshots = []
+
+[dev-dependencies]
+clap_generate = "3.0.0-beta.2"
