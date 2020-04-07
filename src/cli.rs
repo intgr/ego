@@ -1,4 +1,4 @@
-use clap::{App, AppSettings, Arg, ArgGroup};
+use clap::{App, AppSettings, Arg, ArgGroup, ValueHint};
 use log::Level;
 use std::ffi::OsString;
 
@@ -17,48 +17,53 @@ pub struct Args {
     pub method: Method,
 }
 
-pub fn parse_args<T: Into<OsString> + Clone>(args: impl IntoIterator<Item = T>) -> Args {
-    let matches = App::new("Alter Ego: run desktop applications under a different local user")
+pub fn build_cli() -> App<'static> {
+    App::new("Alter Ego: run desktop applications under a different local user")
         .setting(AppSettings::TrailingVarArg)
         .setting(AppSettings::DisableVersion)
         .setting(AppSettings::ColoredHelp)
         .arg(
-            Arg::with_name("user")
-                .short("u")
+            Arg::new("user")
+                .short('u')
                 .long("user")
+                .about("Specify a username (default: ego)")
                 .value_name("USER")
-                .help("Specify a username (default: ego)")
-                .takes_value(true),
+                .takes_value(true)
+                .value_hint(ValueHint::Username),
         )
         .arg(
-            Arg::with_name("sudo")
+            Arg::new("sudo")
                 .long("sudo")
-                .help("Use 'sudo' to change user (default)"),
+                .about("Use 'sudo' to change user (default)"),
         )
         .arg(
-            Arg::with_name("machinectl")
+            Arg::new("machinectl")
                 .long("machinectl")
-                .help("Use 'machinectl' to change user"),
+                .about("Use 'machinectl' to change user"),
         )
         .arg(
-            Arg::with_name("machinectl-bare")
+            Arg::new("machinectl-bare")
                 .long("machinectl-bare")
-                .help("Use 'machinectl' but skip xdg-desktop-portal setup"),
+                .about("Use 'machinectl' but skip xdg-desktop-portal setup"),
         )
-        .group(ArgGroup::with_name("method").args(&["sudo", "machinectl", "machinectl-bare"]))
+        .group(ArgGroup::new("method").args(&["sudo", "machinectl", "machinectl-bare"]))
         .arg(
-            Arg::with_name("command")
-                .help("Command name and arguments to run (default: user shell)")
-                .multiple(true),
-        )
-        .arg(
-            Arg::with_name("verbose")
-                .short("v")
-                .long("verbose")
+            Arg::new("command")
+                .about("Command name and arguments to run (default: user shell)")
                 .multiple(true)
-                .help("Verbose output. Use multiple times for more output."),
+                .value_hint(ValueHint::CommandWithArguments),
         )
-        .get_matches_from(args);
+        .arg(
+            Arg::new("verbose")
+                .short('v')
+                .long("verbose")
+                .about("Verbose output. Use multiple times for more output.")
+                .multiple_occurrences(true),
+        )
+}
+
+pub fn parse_args<T: Into<OsString> + Clone>(args: impl IntoIterator<Item = T>) -> Args {
+    let matches = build_cli().get_matches_from(args);
 
     Args {
         user: matches.value_of("user").unwrap_or("ego").to_string(),

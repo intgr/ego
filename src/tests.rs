@@ -1,9 +1,70 @@
-use super::*;
+// use super::*;
+use crate::cli::{build_cli, parse_args, Method};
+use crate::{get_wayland_socket, EgoContext};
+use ansi_term::Colour::{Cyan, Red};
+use clap_generate::generators::{Bash, Zsh};
+use clap_generate::Generator;
 use log::Level;
+use std::env;
+use std::fs::File;
+use std::io::{ErrorKind, Read, Write};
+use std::path::PathBuf;
 
 /// `vec![]` constructor that converts arguments to String
 macro_rules! string_vec {
     ($($x:expr),*) => (vec![$($x.to_string()),*] as Vec<String>);
+}
+
+/// Helper for snapshot testing, we abuse it to keep shell completions up to date.
+fn snapshot_match(path: &str, data: Vec<u8>) {
+    if cfg!(feature = "update-snapshots") {
+        let mut file = File::create(path).unwrap();
+        file.write(data.as_ref()).unwrap();
+        file.flush().unwrap();
+    } else {
+        let mut snapshot_data = Vec::<u8>::new();
+        match File::open(path) {
+            Err(e) if e.kind() == ErrorKind::NotFound => {}
+            Err(e) => panic!("{}: {}", path, e),
+            Ok(mut file) => {
+                file.read_to_end(&mut snapshot_data).unwrap();
+            }
+        }
+        if data != snapshot_data {
+            panic!(
+                "\n{}\n{}\n",
+                Red.paint(format!("Snapshot {} out of date", path)),
+                Cyan.paint("HINT: run 'cargo test --features=update-snapshots' to update")
+            );
+        }
+    }
+}
+
+fn check_completion<G>(path: &str)
+where
+    G: Generator,
+{
+    let mut buf = Vec::<u8>::new();
+    let mut app = build_cli();
+    clap_generate::generate::<G, _>(&mut app, "ego", &mut buf);
+    buf.write(b"\n").unwrap();
+
+    snapshot_match(path, buf);
+}
+
+/// Unit tests may seem like a weird place to update shell completion files, but this is like
+/// snapshot testing, which guarantees the file is never out of date.
+///
+/// run 'cargo test --features=update-snapshots' to update
+///
+/// Usage with zsh:
+/// ```
+/// cp varia/ego-completion.zsh /usr/local/share/zsh/site-functions/_ego
+/// ```
+#[test]
+fn shell_completions() {
+    check_completion::<Zsh>("varia/ego-completion.zsh");
+    check_completion::<Bash>("varia/ego-completion.bash");
 }
 
 fn test_context() -> EgoContext {
