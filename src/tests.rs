@@ -1,4 +1,5 @@
 use super::*;
+use log::Level;
 
 /// `vec![]` constructor that converts arguments to String
 macro_rules! string_vec {

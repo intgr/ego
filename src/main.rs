@@ -1,8 +1,12 @@
 #[macro_use]
 extern crate simple_error;
 
+use crate::cli::{parse_args, Method};
+use crate::errors::{print_error, AnyErr, ErrorWithHint};
+use log::{debug, info};
+use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
+use simple_error::SimpleError;
 use std::env::VarError;
-use std::ffi::OsString;
 use std::fs::DirBuilder;
 use std::os::unix::fs::DirBuilderExt;
 use std::os::unix::fs::PermissionsExt;
@@ -10,15 +14,10 @@ use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
 use std::{env, fs};
-
-use crate::errors::{print_error, AnyErr, ErrorWithHint};
-use clap::{App, AppSettings, Arg, ArgGroup};
-use log::{debug, info, Level};
-use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
-use simple_error::SimpleError;
 use users::{get_user_by_name, get_user_by_uid, uid_t};
 use which::which;
 
+mod cli;
 mod errors;
 mod logging;
 #[cfg(test)]
@@ -28,78 +27,6 @@ struct EgoContext {
     runtime_dir: PathBuf,
     target_user: String,
     target_uid: uid_t,
-}
-
-#[derive(Debug, PartialEq)]
-enum Method {
-    Sudo,
-    Machinectl,
-}
-
-struct Args {
-    user: String,
-    command: Vec<String>,
-    log_level: log::Level,
-    method: Method,
-}
-
-fn parse_args<T: Into<OsString> + Clone>(args: impl IntoIterator<Item = T>) -> Args {
-    let matches = App::new("Alter Ego: run desktop applications under a different local user")
-        .setting(AppSettings::TrailingVarArg)
-        .setting(AppSettings::DisableVersion)
-        .setting(AppSettings::ColoredHelp)
-        .arg(
-            Arg::with_name("user")
-                .short("u")
-                .long("user")
-                .value_name("USER")
-                .help("Specify a username (default: ego)")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::with_name("sudo")
-                .long("sudo")
-                .help("Use 'sudo' to change user (default)"),
-        )
-        .arg(
-            Arg::with_name("machinectl")
-                .long("machinectl")
-                .help("Use 'machinectl' to change user"),
-        )
-        .group(ArgGroup::with_name("method").args(&["sudo", "machinectl"]))
-        .arg(
-            Arg::with_name("command")
-                .help("Command name and arguments to run (default: user shell)")
-                .multiple(true),
-        )
-        .arg(
-            Arg::with_name("verbose")
-                .short("v")
-                .long("verbose")
-                .multiple(true)
-                .help("Verbose output. Use multiple times for more output."),
-        )
-        .get_matches_from(args);
-
-    Args {
-        user: matches.value_of("user").unwrap_or("ego").to_string(),
-        command: matches
-            .values_of("command")
-            .unwrap_or_default()
-            .map(|v| v.to_string())
-            .collect(),
-        log_level: match matches.occurrences_of("verbose") {
-            0 => Level::Warn,
-            1 => Level::Info,
-            2 => Level::Debug,
-            _ => Level::Trace,
-        },
-        method: if matches.is_present("machinectl") {
-            Method::Machinectl
-        } else {
-            Method::Sudo
-        },
-    }
 }
 
 fn main_inner() -> Result<(), AnyErr> {
