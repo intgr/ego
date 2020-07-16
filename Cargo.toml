@@ -19,6 +19,6 @@ users = "0.9.1"
 simple-error = "0.2.1"
 posix-acl = "1.0.0"
 clap = "2.33.1"
-log = {version = "0.4.8", features = ["std"]}
+log = {version = "0.4.11", features = ["std"]}
 ansi_term = "0.12.1"
 which = {version = "3.1.0", default-features = false}
