@@ -45,7 +45,7 @@ pub fn parse_args<T: Into<OsString> + Clone>(args: impl IntoIterator<Item = T>) 
                 .long("machinectl-bare")
                 .help("Use 'machinectl' but skip xdg-desktop-portal setup"),
         )
-        .group(ArgGroup::with_name("method").args(&["sudo", "machinectl"]))
+        .group(ArgGroup::with_name("method").args(&["sudo", "machinectl", "machinectl-bare"]))
         .arg(
             Arg::with_name("command")
                 .help("Command name and arguments to run (default: user shell)")
