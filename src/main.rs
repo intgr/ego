@@ -98,7 +98,7 @@ fn getenv_path(key: &str) -> Result<PathBuf, SimpleError> {
     }
 }
 
-/// Get details of *target* user, also formats a nice user-friendly message with instructions.
+/// Get details of *target* user; on error, formats a nice user-friendly message with instructions.
 fn get_target_user(username: &str) -> Result<User, ErrorWithHint> {
     if let Some(user) = get_user_by_name(&username) {
         return Ok(user);
