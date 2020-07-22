@@ -14,7 +14,8 @@ use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
 use std::{env, fs};
-use users::{get_user_by_name, get_user_by_uid, uid_t};
+use users::os::unix::UserExt;
+use users::{get_user_by_name, get_user_by_uid, uid_t, User};
 
 mod cli;
 mod errors;
@@ -26,6 +27,7 @@ struct EgoContext {
     runtime_dir: PathBuf,
     target_user: String,
     target_uid: uid_t,
+    target_user_shell: PathBuf,
 }
 
 fn main_inner() -> Result<(), AnyErr> {
@@ -96,10 +98,10 @@ fn getenv_path(key: &str) -> Result<PathBuf, SimpleError> {
     }
 }
 
-/// Get UID for *target* user, also formats a nice user-friendly message with instructions.
-fn get_target_uid(username: &str) -> Result<uid_t, ErrorWithHint> {
+/// Get details of *target* user, also formats a nice user-friendly message with instructions.
+fn get_target_user(username: &str) -> Result<User, ErrorWithHint> {
     if let Some(user) = get_user_by_name(&username) {
-        return Ok(user.uid());
+        return Ok(user);
     }
 
     let mut hint = "Specify different user with --user= or create a new user".to_string();
@@ -127,12 +129,13 @@ fn get_target_uid(username: &str) -> Result<uid_t, ErrorWithHint> {
 }
 
 fn create_context(username: String) -> Result<EgoContext, AnyErr> {
-    let uid = get_target_uid(&username)?;
+    let user = get_target_user(&username)?;
     let runtime_dir = getenv_path("XDG_RUNTIME_DIR")?;
     Ok(EgoContext {
         runtime_dir,
         target_user: username,
-        target_uid: uid,
+        target_uid: user.uid(),
+        target_user_shell: user.shell().into(),
     })
 }
 
