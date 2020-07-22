@@ -14,8 +14,8 @@ use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
 use std::{env, fs};
-use users::{get_user_by_name, get_user_by_uid, uid_t};
-use which::which;
+use users::os::unix::UserExt;
+use users::{get_user_by_name, get_user_by_uid, uid_t, User};
 
 mod cli;
 mod errors;
@@ -27,6 +27,7 @@ struct EgoContext {
     runtime_dir: PathBuf,
     target_user: String,
     target_uid: uid_t,
+    target_user_shell: PathBuf,
 }
 
 fn main_inner() -> Result<(), AnyErr> {
@@ -97,10 +98,10 @@ fn getenv_path(key: &str) -> Result<PathBuf, SimpleError> {
     }
 }
 
-/// Get UID for *target* user, also formats a nice user-friendly message with instructions.
-fn get_target_uid(username: &str) -> Result<uid_t, ErrorWithHint> {
+/// Get details of *target* user; on error, formats a nice user-friendly message with instructions.
+fn get_target_user(username: &str) -> Result<User, ErrorWithHint> {
     if let Some(user) = get_user_by_name(&username) {
-        return Ok(user.uid());
+        return Ok(user);
     }
 
     let mut hint = "Specify different user with --user= or create a new user".to_string();
@@ -128,12 +129,13 @@ fn get_target_uid(username: &str) -> Result<uid_t, ErrorWithHint> {
 }
 
 fn create_context(username: String) -> Result<EgoContext, AnyErr> {
-    let uid = get_target_uid(&username)?;
+    let user = get_target_user(&username)?;
     let runtime_dir = getenv_path("XDG_RUNTIME_DIR")?;
     Ok(EgoContext {
         runtime_dir,
         target_user: username,
-        target_uid: uid,
+        target_uid: user.uid(),
+        target_user_shell: user.shell().into(),
     })
 }
 
@@ -323,6 +325,10 @@ fn run_sudo_command(
     Ok(())
 }
 
+fn machinectl_remote_command(remote_cmd: Vec<String>) -> String {
+    format!("exec -- {}", shell_words::join(remote_cmd))
+}
+
 fn run_machinectl_command(
     ctx: &EgoContext,
     envvars: Vec<String>,
@@ -334,20 +340,22 @@ fn run_machinectl_command(
     args.push("--".to_string());
     args.push(".host".to_string());
 
-    if !remote_cmd.is_empty() {
-        let cmd = &remote_cmd[0];
-        if cmd.starts_with('/') {
-            // OK, command name already absolute.
-            args.extend(remote_cmd)
-        } else {
-            // machinectl requires absolute executable path, resolve it...
-            let path = try_with!(which(cmd), "Cannot find executable '{}'", cmd);
-            args.push(path.to_str().expect("Invalid path").into());
-            args.extend(remote_cmd.iter().skip(1).cloned());
-        }
-    }
+    // I wish this could be done without going through /bin/sh, but seems necessary.
+    args.push("/bin/sh".to_string());
+    args.push("-c".to_string());
+    let remote_cmd = if remote_cmd.is_empty() {
+        vec![require_with!(
+            ctx.target_user_shell.to_str(),
+            "User '{}' shell has unexpected characters",
+            ctx.target_user
+        )
+        .to_string()]
+    } else {
+        remote_cmd
+    };
+    args.push(machinectl_remote_command(remote_cmd));
 
-    info!("Running command: machinectl {}", args.join(" "));
+    info!("Running command: machinectl {}", shell_words::join(&args));
     Command::new("machinectl").args(args).exec();
 
     Ok(())

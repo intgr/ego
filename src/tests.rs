@@ -11,6 +11,7 @@ fn test_context() -> EgoContext {
         runtime_dir: "/run/user/1000".into(),
         target_user: "ego".into(),
         target_uid: 155,
+        target_user_shell: "/bin/bash".into(),
     }
 }
 
