@@ -344,7 +344,7 @@ fn machinectl_remote_command(remote_cmd: Vec<String>, envvars: Vec<String>, bare
         cmd.push_str("systemctl --user start xdg-desktop-portal-gtk; ");
     }
     cmd.push_str(&format!("exec -- {}", shell_words::join(remote_cmd)));
-    return cmd;
+    cmd
 }
 
 fn run_machinectl_command(
