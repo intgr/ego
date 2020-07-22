@@ -15,7 +15,6 @@ use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
 use std::{env, fs};
 use users::{get_user_by_name, get_user_by_uid, uid_t};
-use which::which;
 
 mod cli;
 mod errors;
@@ -323,6 +322,10 @@ fn run_sudo_command(
     Ok(())
 }
 
+fn machinectl_remote_command(remote_cmd: Vec<String>) -> String {
+    format!("exec -- {}", shell_words::join(remote_cmd))
+}
+
 fn run_machinectl_command(
     ctx: &EgoContext,
     envvars: Vec<String>,
@@ -334,20 +337,22 @@ fn run_machinectl_command(
     args.push("--".to_string());
     args.push(".host".to_string());
 
-    if !remote_cmd.is_empty() {
-        let cmd = &remote_cmd[0];
-        if cmd.starts_with('/') {
-            // OK, command name already absolute.
-            args.extend(remote_cmd)
-        } else {
-            // machinectl requires absolute executable path, resolve it...
-            let path = try_with!(which(cmd), "Cannot find executable '{}'", cmd);
-            args.push(path.to_str().expect("Invalid path").into());
-            args.extend(remote_cmd.iter().skip(1).cloned());
-        }
-    }
+    // I wish this could be done without going through /bin/sh, but seems necessary.
+    args.push("/bin/sh".to_string());
+    args.push("-c".to_string());
+    let remote_cmd = if remote_cmd.is_empty() {
+        vec![require_with!(
+            ctx.target_user_shell.to_str(),
+            "User '{}' shell has unexpected characters",
+            ctx.target_user
+        )
+        .to_string()]
+    } else {
+        remote_cmd
+    };
+    args.push(machinectl_remote_command(remote_cmd));
 
-    info!("Running command: machinectl {}", args.join(" "));
+    info!("Running command: machinectl {}", shell_words::join(&args));
     Command::new("machinectl").args(args).exec();
 
     Ok(())
