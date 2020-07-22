@@ -325,8 +325,20 @@ fn run_sudo_command(
     Ok(())
 }
 
-fn machinectl_remote_command(remote_cmd: Vec<String>) -> String {
-    format!("exec -- {}", shell_words::join(remote_cmd))
+fn machinectl_remote_command(remote_cmd: Vec<String>, envvars: Vec<String>) -> String {
+    let mut cmd = String::new();
+
+    let env_names = envvars
+        .iter()
+        .map(|v| v.split('=').next().expect("Unexpected data in envvars"));
+
+    cmd.push_str(&format!(
+        "dbus-update-activation-environment --systemd {}; ",
+        shell_words::join(env_names)
+    ));
+    cmd.push_str("systemctl --user start xdg-desktop-portal-gtk; ");
+    cmd.push_str(&format!("exec -- {}", shell_words::join(remote_cmd)));
+    return cmd;
 }
 
 fn run_machinectl_command(
@@ -353,7 +365,7 @@ fn run_machinectl_command(
     } else {
         remote_cmd
     };
-    args.push(machinectl_remote_command(remote_cmd));
+    args.push(machinectl_remote_command(remote_cmd, envvars));
 
     info!("Running command: machinectl {}", shell_words::join(&args));
     Command::new("machinectl").args(args).exec();
