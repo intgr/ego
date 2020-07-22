@@ -61,7 +61,8 @@ fn main_inner() -> Result<(), AnyErr> {
 
     let ret = match args.method {
         Method::Sudo => run_sudo_command(&ctx, vars, args.command),
-        Method::Machinectl => run_machinectl_command(&ctx, vars, args.command),
+        Method::Machinectl => run_machinectl_command(&ctx, vars, args.command, false),
+        Method::MachinectlBare => run_machinectl_command(&ctx, vars, args.command, true),
     };
     if let Err(msg) = ret {
         bail!("Error changing user: {}", msg);
@@ -324,22 +325,24 @@ fn run_sudo_command(
     Ok(())
 }
 
-fn machinectl_remote_command(remote_cmd: Vec<String>, envvars: Vec<String>) -> String {
+fn machinectl_remote_command(remote_cmd: Vec<String>, envvars: Vec<String>, bare: bool) -> String {
     let mut cmd = String::new();
 
-    // Split env variables by '=', to pass just their names
-    let env_names = envvars
-        .iter()
-        .map(|v| v.split('=').next().expect("Unexpected data in envvars"));
+    if !bare {
+        // Split env variables by '=', to pass just their names
+        let env_names = envvars
+            .iter()
+            .map(|v| v.split('=').next().expect("Unexpected data in envvars"));
 
-    // Set environment variables in systemd
-    cmd.push_str(&format!(
-        "dbus-update-activation-environment --systemd {}; ",
-        shell_words::join(env_names)
-    ));
-    // TODO: Should we support desktop-portals other than gtk?
-    // XXX what happens if the desktop-portal is already running but with an outdated environment?
-    cmd.push_str("systemctl --user start xdg-desktop-portal-gtk; ");
+        // Set environment variables in systemd
+        cmd.push_str(&format!(
+            "dbus-update-activation-environment --systemd {}; ",
+            shell_words::join(env_names)
+        ));
+        // TODO: Should we support desktop-portals other than gtk?
+        // XXX what happens if the desktop-portal is already running but with an outdated environment?
+        cmd.push_str("systemctl --user start xdg-desktop-portal-gtk; ");
+    }
     cmd.push_str(&format!("exec -- {}", shell_words::join(remote_cmd)));
     return cmd;
 }
@@ -348,6 +351,7 @@ fn run_machinectl_command(
     ctx: &EgoContext,
     envvars: Vec<String>,
     remote_cmd: Vec<String>,
+    bare: bool,
 ) -> Result<(), AnyErr> {
     let mut args = vec!["shell".to_string()];
     args.push(format!("--uid={}", ctx.target_user));
@@ -368,7 +372,7 @@ fn run_machinectl_command(
     } else {
         remote_cmd
     };
-    args.push(machinectl_remote_command(remote_cmd, envvars));
+    args.push(machinectl_remote_command(remote_cmd, envvars, bare));
 
     info!("Running command: machinectl {}", shell_words::join(&args));
     Command::new("machinectl").args(args).exec();
