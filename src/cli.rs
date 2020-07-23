@@ -6,6 +6,7 @@ use std::ffi::OsString;
 pub enum Method {
     Sudo,
     Machinectl,
+    MachinectlBare,
 }
 
 /// Data type for parsed settings
@@ -39,7 +40,12 @@ pub fn parse_args<T: Into<OsString> + Clone>(args: impl IntoIterator<Item = T>) 
                 .long("machinectl")
                 .help("Use 'machinectl' to change user"),
         )
-        .group(ArgGroup::with_name("method").args(&["sudo", "machinectl"]))
+        .arg(
+            Arg::with_name("machinectl-bare")
+                .long("machinectl-bare")
+                .help("Use 'machinectl' but skip xdg-desktop-portal setup"),
+        )
+        .group(ArgGroup::with_name("method").args(&["sudo", "machinectl", "machinectl-bare"]))
         .arg(
             Arg::with_name("command")
                 .help("Command name and arguments to run (default: user shell)")
@@ -69,6 +75,8 @@ pub fn parse_args<T: Into<OsString> + Clone>(args: impl IntoIterator<Item = T>) 
         },
         method: if matches.is_present("machinectl") {
             Method::Machinectl
+        } else if matches.is_present("machinectl-bare") {
+            Method::MachinectlBare
         } else {
             Method::Sudo
         },

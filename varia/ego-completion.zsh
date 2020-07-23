@@ -9,6 +9,7 @@ function _ego {
         {-v,--verbose}'[Verbose output]' \
         '--sudo[Execute using sudo]' \
         '--machinectl[Execute using machinectl]' \
+        '--machinectl-bare[Execute using machinectl but skip xdg-desktop-portal setup]' \
         '--[]' \
         '(-)1:command: _command_names -e' \
         '*::arguments: _normal'
