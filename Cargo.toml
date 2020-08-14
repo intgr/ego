@@ -18,7 +18,7 @@ categories = ["command-line-utilities"]
 users = "0.10.0"
 simple-error = "0.2.1"
 posix-acl = "1.0.0"
-clap = "2.33.1"
+clap = "2.33.3"
 log = {version = "0.4.11", features = ["std"]}
 ansi_term = "0.12.1"
 shell-words = "1.0.0"
