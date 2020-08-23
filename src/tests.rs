@@ -1,4 +1,3 @@
-// use super::*;
 use crate::cli::{build_cli, parse_args, Method};
 use crate::{get_wayland_socket, EgoContext};
 use ansi_term::Colour::{Cyan, Red};
