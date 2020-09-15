@@ -50,7 +50,7 @@ checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
 [[package]]
 name = "clap"
 version = "3.0.0-beta.1"
-source = "git+https://github.com/intgr/clap?branch=value-hints-for-zsh-completion#64ee0f80096def97096466a66e98adb9d19689e8"
+source = "git+https://github.com/clap-rs/clap#03c11607b58ae88be53de293f06204a9a36f4e0e"
 dependencies = [
  "atty",
  "bitflags",
@@ -68,7 +68,7 @@ dependencies = [
 [[package]]
 name = "clap_derive"
 version = "3.0.0-beta.1"
-source = "git+https://github.com/intgr/clap?branch=value-hints-for-zsh-completion#64ee0f80096def97096466a66e98adb9d19689e8"
+source = "git+https://github.com/clap-rs/clap#03c11607b58ae88be53de293f06204a9a36f4e0e"
 dependencies = [
  "heck",
  "proc-macro-error",
@@ -80,7 +80,7 @@ dependencies = [
 [[package]]
 name = "clap_generate"
 version = "3.0.0-beta.1"
-source = "git+https://github.com/intgr/clap?branch=value-hints-for-zsh-completion#64ee0f80096def97096466a66e98adb9d19689e8"
+source = "git+https://github.com/clap-rs/clap#03c11607b58ae88be53de293f06204a9a36f4e0e"
 dependencies = [
  "clap",
 ]
