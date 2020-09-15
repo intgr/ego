@@ -29,3 +29,4 @@ update-snapshots = []
 
 [dev-dependencies]
 clap_generate = { git = "https://github.com/clap-rs/clap" }
+insta = "0.16.1"
