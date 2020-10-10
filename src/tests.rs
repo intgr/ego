@@ -51,7 +51,7 @@ fn render_completion<G: Generator>() -> Vec<u8> {
 /// Unit tests may seem like a weird place to update shell completion files, but this is like
 /// snapshot testing, which guarantees the file is never out of date.
 ///
-/// Also we don't have to lug around the `clap_generate` dependency in the `ego` binary itself.
+/// Also we don't have to lug around `clap_generate` code in the `ego` binary itself.
 ///
 /// run 'cargo test --features=update-snapshots' to update
 ///
