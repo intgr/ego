@@ -1,7 +1,7 @@
 use crate::cli::{build_cli, parse_args, Method};
 use crate::{get_wayland_socket, EgoContext};
 use ansi_term::Colour::{Cyan, Red};
-use clap_generate::generators::{Bash, Zsh};
+use clap_generate::generators::{Bash, Fish, Zsh};
 use clap_generate::Generator;
 use log::Level;
 use std::env;
@@ -63,6 +63,7 @@ fn render_completion<G: Generator>() -> Vec<u8> {
 fn shell_completions() {
     snapshot_match("varia/ego-completion.zsh", &render_completion::<Zsh>());
     snapshot_match("varia/ego-completion.bash", &render_completion::<Bash>());
+    snapshot_match("varia/ego-completion.fish", &render_completion::<Fish>());
 }
 
 fn test_context() -> EgoContext {
