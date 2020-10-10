@@ -26,7 +26,6 @@ pub fn build_cli() -> App<'static> {
             Arg::new("user")
                 .short('u')
                 .long("user")
-                .about("Specify a username (default: ego)")
                 .value_name("USER")
                 .about("Specify a username (default: ego)")
                 .takes_value(true)
