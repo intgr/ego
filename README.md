@@ -9,8 +9,8 @@ ego (a.k.a Alter Ego)
 > ... No? Just run `ego steam`!
 
 **Ego** is a tool to run Linux desktop applications under a different local user. Currently
-integrates with Wayland, Xorg and PulseAudio. You may think of it as `xhost` for Wayland and
-PulseAudio. This is done using filesystem ACLs and `xhost` command.
+integrates with Wayland, Xorg, PulseAudio and xdg-desktop-portal. You may think of it as `xhost`
+for Wayland and PulseAudio. This is done using filesystem ACLs and `xhost` command.
 
 Work in progress. :)
 
@@ -32,31 +32,49 @@ The goal of ego is to come with sane defaults and be as easy as possible to set 
 
 3. That's all, try it:
 
-       ego xdg-open .
+       ego --machinectl xdg-open .
 
-To avoid entering the password for sudo, add this to `/etc/sudoers` file (replace `<myname>` with
-your own username):
+[1] No extra groups are needed by the ego user.
+UID below 1000 hides this user on the login screen.
+
+### Avoid password prompt
+If using "machinectl" mode, you need systemd version 247 or later to do this securely.
+
+Create file `/etc/polkit-1/rules.d/50-ego-machinectl.rules`, polkit will automatically load it
+(replace `<myname>` with your own username):
+
+```js
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.machine1.host-shell" &&
+        action.lookup("user") == "ego" &&
+        subject.user == "<myname>") {
+            return polkit.Result.YES;
+    }
+});
+```
+
+##### sudo mode
+For sudo, add the following to `/etc/sudoers` (replace `<myname>` with your own username):
 
     <myname> ALL=(ego) NOPASSWD:ALL
-
-[1] No extra groups are necessary for typical usage. UID below 1000 hides this user on the login
-    screen.
 
 Changelog
 ---------
 ##### Unreleased
 * Fix `--machinectl` on Ubuntu, Debian with dash shell (#42)
 * Fix error reporting when command execution fails (#43)
+* Documented how to avoid password prompt with machinectl & other doc tweaks (#41)
 
 ##### 0.4.0 (2021-01-29)
 * Improved integration with desktop environments:
   * Launch xdg-desktop-portal-gtk in machinectl session (#6, #31)
   * Old behavior is still available via `--machinectl-bare` switch.
 * Shell completion files are now auto-generated with clap-generate 3.0.0-beta.2 (#36, #28)
+  * bash, zsh and fish shells are supported out of the box.
 * Code reorganization and CI improvements (#21, #23)
 * Dependency updates (#20, #24, #27, #22, #26, #33, #35, #38, #37, #39)
 
-##### 0.3.1 (2020-03-02)
+##### 0.3.1 (2020-03-17)
 * Improved error message for missing target user (#16)
 
 ##### 0.3.0 (2020-03-02)
