@@ -61,9 +61,9 @@ For sudo, add the following to `/etc/sudoers` (replace `<myname>` with your own 
 
 Changelog
 ---------
-##### Unreleased
-* Fix `--machinectl` on Ubuntu, Debian with dash shell (#42)
-* Fix error reporting when command execution fails (#43)
+##### 0.4.1 (2021-01-29)
+* Fixed `--machinectl` on Ubuntu, Debian with dash shell (#42)
+* Fixed error reporting when command execution fails (#43)
 * Documented how to avoid password prompt with machinectl & other doc tweaks (#41)
 
 ##### 0.4.0 (2021-01-29)
