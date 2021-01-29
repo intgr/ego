@@ -24,7 +24,7 @@ The goal of ego is to come with sane defaults and be as easy as possible to set 
 1. Make sure you [have Rust installed](https://www.rust-lang.org/tools/install) and run:
 
        cargo install ego
-       sudo cp ./.cargo/bin/ego /usr/local/bin/
+       sudo cp ~/.cargo/bin/ego /usr/local/bin/
 
 2. Create local user named "ego": <sup>[1]</sup>
 
@@ -38,7 +38,8 @@ The goal of ego is to come with sane defaults and be as easy as possible to set 
 UID below 1000 hides this user on the login screen.
 
 ### Avoid password prompt
-If using "machinectl" mode, you need systemd version 247 or later to do this securely.
+If using "machinectl" mode, you need the rather new systemd version >=247 and polkit >=0.106
+to do this securely.
 
 Create file `/etc/polkit-1/rules.d/50-ego-machinectl.rules`, polkit will automatically load it
 (replace `<myname>` with your own username):
