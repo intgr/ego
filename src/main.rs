@@ -343,7 +343,7 @@ fn machinectl_remote_command(remote_cmd: Vec<String>, envvars: Vec<String>, bare
         // XXX what happens if the desktop-portal is already running but with an outdated environment?
         cmd.push_str("systemctl --user start xdg-desktop-portal-gtk; ");
     }
-    cmd.push_str(&format!("exec -- {}", shell_words::join(remote_cmd)));
+    cmd.push_str(&format!("exec {}", shell_words::join(remote_cmd)));
     cmd
 }
 

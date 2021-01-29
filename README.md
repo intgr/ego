@@ -44,6 +44,9 @@ your own username):
 
 Changelog
 ---------
+##### Unreleased
+* Fix `--machinectl` on Ubuntu, Debian with dash shell (#42)
+
 ##### 0.4.0 (2021-01-29)
 * Improved integration with desktop environments:
   * Launch xdg-desktop-portal-gtk in machinectl session (#6, #31)
