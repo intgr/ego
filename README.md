@@ -46,6 +46,7 @@ Changelog
 ---------
 ##### Unreleased
 * Fix `--machinectl` on Ubuntu, Debian with dash shell (#42)
+* Fix error reporting when command execution fails (#43)
 
 ##### 0.4.0 (2021-01-29)
 * Improved integration with desktop environments:

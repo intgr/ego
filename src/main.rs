@@ -8,12 +8,13 @@ use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
 use simple_error::SimpleError;
 use std::env::VarError;
 use std::fs::DirBuilder;
+use std::io::ErrorKind;
 use std::os::unix::fs::DirBuilderExt;
 use std::os::unix::fs::PermissionsExt;
 use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
-use std::{env, fs};
+use std::{env, fs, io};
 use users::os::unix::UserExt;
 use users::{get_user_by_name, get_user_by_uid, uid_t, User};
 
@@ -65,7 +66,7 @@ fn main_inner() -> Result<(), AnyErr> {
         Method::MachinectlBare => run_machinectl_command(&ctx, vars, args.command, true),
     };
     if let Err(msg) = ret {
-        bail!("Error changing user: {}", msg);
+        bail!("{}", msg);
     }
 
     Ok(())
@@ -303,6 +304,20 @@ fn ensure_ego_rundir(ctx: &EgoContext) -> Result<PathBuf, AnyErr> {
     Ok(path)
 }
 
+fn exec_command(program: &str, args: &[String]) -> Result<(), ErrorWithHint> {
+    // If this call returns at all, it was an error
+    let err: io::Error = Command::new(program).args(args).exec();
+
+    Err(ErrorWithHint::new(
+        format!("Failed executing {}: {}", program, err),
+        if err.kind() == ErrorKind::NotFound {
+            format!("Try installing package that contains command '{}'", program)
+        } else {
+            format!("Complete command: {} {}", program, shell_words::join(args))
+        },
+    ))
+}
+
 fn run_sudo_command(
     ctx: &EgoContext,
     envvars: Vec<String>,
@@ -320,8 +335,7 @@ fn run_sudo_command(
     args.extend(remote_cmd);
 
     info!("Running command: sudo {}", args.join(" "));
-    Command::new("sudo").args(args).exec();
-
+    exec_command("sudo", &args)?;
     Ok(())
 }
 
@@ -375,7 +389,6 @@ fn run_machinectl_command(
     args.push(machinectl_remote_command(remote_cmd, envvars, bare));
 
     info!("Running command: machinectl {}", shell_words::join(&args));
-    Command::new("machinectl").args(args).exec();
-
+    exec_command("machinectl", &args)?;
     Ok(())
 }

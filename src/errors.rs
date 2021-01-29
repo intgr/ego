@@ -26,15 +26,15 @@ impl Error for ErrorWithHint {}
 impl fmt::Display for ErrorWithHint {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.err.fmt(f)
+        self.err.fmt(f)?;
+
+        if !self.hint.is_empty() {
+            write!(f, "\n{}: {}", Green.paint("hint"), self.hint)?;
+        }
+        Ok(())
     }
 }
 
 pub fn print_error(err: AnyErr) {
-    // Look ma', dynamic typing in Rust!
-    if let Some(errhint) = err.downcast_ref::<ErrorWithHint>() {
-        error!("{}\n{}: {}", errhint.err, Green.paint("hint"), errhint.hint);
-    } else {
-        error!("{}", err);
-    }
+    error!("{}", err);
 }
