@@ -28,6 +28,7 @@ jobs:
   test-archlinux:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v1
       - name: Test on Ubuntu
         run: ./test.sh archlinux --pull
 
