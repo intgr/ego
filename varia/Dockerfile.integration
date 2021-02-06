@@ -5,17 +5,17 @@ ARG distro=archlinux
 # Using Dockerfile conditionals
 #### ARCH LINUX base image
 FROM archlinux:base-devel AS ego-base-archlinux
-RUN pacman --noconfirm -Sy cargo acl
+RUN pacman --noconfirm -Sy cargo acl systemd
 
 #### UBUNTU base image
 FROM ubuntu:latest AS ego-base-ubuntu
 RUN apt-get update && \
-    apt-get install -y libacl1-dev cargo sudo && \
+    apt-get install -y cargo libacl1-dev systemd systemd-container sudo && \
     rm -rf /var/lib/apt/lists/*
 
 #### FEDORA base image
 FROM fedora:latest AS ego-base-fedora
-RUN yum install -y libacl-devel cargo && \
+RUN yum install -y cargo libacl-devel systemd systemd-container && \
     yum clean all && \
     rm -rf /var/cache/yum
 
@@ -35,11 +35,19 @@ RUN mkdir src/ && \
 	        target/*/.fingerprint/ego-*
 
 # Do the actual build
-COPY . .
+COPY src src
 RUN cargo install --root=/usr/local --path . --color=always
 
 RUN useradd ego --uid 155 --create-home && \
     useradd user --create-home && \
-    mkdir -m 0700 -p /run/user/0
+    mkdir -m 0700 -p /run/user/0 && \
+    echo root:root | chpasswd
 # TODO: Get rid of XDG_RUNTIME_DIR requirement for command-line-only usage? (see #29)
 ENV XDG_RUNTIME_DIR=/run/user/0
+
+# From https://www.brad-x.com/2014/12/27/running-systemd-within-a-docker-image/
+RUN systemctl mask swap.target
+#RUN systemctl disable graphical.target; systemctl enable multi-user.target
+RUN mkdir -p /etc/systemd/system/console-getty.service.d
+COPY varia/console-getty-override.conf /etc/systemd/system/console-getty.service.d/override.conf
+RUN echo -e '[Journal]\nStorage=none' > /etc/systemd/journald.conf
