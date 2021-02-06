@@ -29,17 +29,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Test on Ubuntu
+      - name: Test on Arch Linux
         run: ./test.sh archlinux --pull
 
   test-ubuntu:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v1
       - name: Test on Ubuntu
         run: ./test.sh ubuntu --pull
 
   test-fedora:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v1
       - name: Test on Fedora
         run: ./test.sh fedora --pull
