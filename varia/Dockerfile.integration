@@ -1,0 +1,43 @@
+# This Dockerfile is for integration testing in CI, see .github/workflows/tests.yml
+# Run with --build-arg=channel=stable OR --build-arg=channel=nightly (default)
+ARG distro=archlinux
+
+# Using Dockerfile conditionals
+#### ARCH LINUX base image
+FROM archlinux:base-devel AS ego-base-archlinux
+RUN pacman --noconfirm -Sy cargo acl
+
+#### UBUNTU base image
+FROM ubuntu:latest AS ego-base-ubuntu
+RUN apt-get update && \
+    apt-get install -y libacl1-dev cargo sudo && \
+    rm -rf /var/lib/apt/lists/*
+
+#### FEDORA base image
+FROM fedora:latest AS ego-base-fedora
+RUN yum install -y libacl-devel cargo
+
+#### Common logic for base image
+FROM ego-base-$distro AS cargo-build
+
+WORKDIR /root/build
+# Make warnings fatal
+ENV RUSTFLAGS="-D warnings"
+
+# Build Cargo dependencies for cache
+COPY Cargo.toml Cargo.lock ./
+RUN mkdir src/ && \
+	echo "pub fn main() {println!(\"dummy function\")}" > src/main.rs && \
+	cargo build --bins --tests --color=always && \
+	rm -rdv target/*/deps/ego-* \
+	        target/*/.fingerprint/ego-*
+
+# Do the actual build
+COPY . .
+RUN cargo install --root=/usr/local --path . --color=always
+
+RUN useradd ego --uid 155 --create-home && \
+    useradd user --create-home && \
+    mkdir -m 0700 -p /run/user/0
+# TODO: Get rid of XDG_RUNTIME_DIR requirement for command-line-only usage? (see #29)
+ENV XDG_RUNTIME_DIR=/run/user/0
