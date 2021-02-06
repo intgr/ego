@@ -29,16 +29,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Test on Ubuntu
-        run: ./test archlinux --pull
+        run: ./test.sh archlinux --pull
 
   test-ubuntu:
     runs-on: ubuntu-latest
     steps:
       - name: Test on Ubuntu
-        run: ./test ubuntu --pull
+        run: ./test.sh ubuntu --pull
 
   test-fedora:
     runs-on: ubuntu-latest
     steps:
       - name: Test on Fedora
-        run: ./test fedora --pull
+        run: ./test.sh fedora --pull

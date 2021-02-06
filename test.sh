@@ -1,4 +1,6 @@
 #!/bin/sh
+# TODO: Rename script to something more descriptive
+
 set -e
 # ARGS=--pull
 DISTRO=${1:-archlinux}
