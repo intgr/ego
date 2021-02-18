@@ -16,7 +16,7 @@ fi
 
 docker build . ${2-} -f varia/Dockerfile.integration --build-arg=distro=$DISTRO -t $IMG
 docker run --rm $IMG sh -c 'id && ego --sudo id'
-docker run --rm -it \
+docker run --rm \
   -e container=docker \
   --tmpfs /run \
   --tmpfs /tmp \
