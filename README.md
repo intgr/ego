@@ -39,7 +39,7 @@ UID below 1000 hides this user on the login screen.
 
 ### Avoid password prompt
 If using "machinectl" mode (default if available), you need the rather new systemd version >=247
-and polkit >=0.106  to do this securely.
+and polkit >=0.106 to do this securely.
 
 Create file `/etc/polkit-1/rules.d/50-ego-machinectl.rules`, polkit will automatically load it
 (replace `<myname>` with your own username):
