@@ -1,4 +1,5 @@
 use crate::cli::{build_cli, parse_args, Method};
+use crate::util::have_command;
 use crate::{get_wayland_socket, EgoContext};
 use ansi_term::Colour::{Cyan, Red};
 use clap_generate::generators::{Bash, Fish, Zsh};
@@ -101,7 +102,7 @@ fn test_parse_args() {
     assert_eq!(args.user, "ego".to_string());
     assert_eq!(args.command, string_vec![]);
     assert_eq!(args.log_level, Level::Warn);
-    assert_eq!(args.method, Method::Sudo);
+    assert_eq!(args.method, None);
 
     // --user
     assert_eq!(
@@ -120,6 +121,12 @@ fn test_parse_args() {
     // --machinectl
     assert_eq!(
         parse_args(vec!["ego", "--machinectl"]).method,
-        Method::Machinectl
+        Some(Method::Machinectl)
     );
+}
+
+#[test]
+fn test_have_command() {
+    assert!(have_command("sh"));
+    assert!(!have_command("what-is-this-i-don't-even"));
 }

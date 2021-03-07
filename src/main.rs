@@ -3,7 +3,8 @@ extern crate simple_error;
 
 use crate::cli::{parse_args, Method};
 use crate::errors::{print_error, AnyErr, ErrorWithHint};
-use log::{debug, info};
+use crate::util::{have_command, sd_booted};
+use log::{debug, info, warn};
 use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
 use simple_error::SimpleError;
 use std::env::VarError;
@@ -23,6 +24,7 @@ mod errors;
 mod logging;
 #[cfg(test)]
 mod tests;
+mod util;
 
 struct EgoContext {
     runtime_dir: PathBuf,
@@ -60,7 +62,8 @@ fn main_inner() -> Result<(), AnyErr> {
         Ok(ret) => vars.extend(ret),
     }
 
-    let ret = match args.method {
+    let method = args.method.unwrap_or_else(detect_method);
+    let ret = match method {
         Method::Sudo => run_sudo_command(&ctx, vars, args.command),
         Method::Machinectl => run_machinectl_command(&ctx, vars, args.command, false),
         Method::MachinectlBare => run_machinectl_command(&ctx, vars, args.command, true),
@@ -316,6 +319,20 @@ fn exec_command(program: &str, args: &[String]) -> Result<(), ErrorWithHint> {
             format!("Complete command: {} {}", program, shell_words::join(args))
         },
     ))
+}
+
+/// Detect which method should be used
+fn detect_method() -> Method {
+    if !sd_booted() {
+        return Method::Sudo;
+    }
+    if !have_command("machinectl") {
+        // If booted using systemd, issue a warning
+        warn!("machinectl (systemd-container) is not installed");
+        warn!("Falling back to 'sudo', some desktop integration features may not work");
+        return Method::Sudo;
+    }
+    Method::Machinectl
 }
 
 fn run_sudo_command(

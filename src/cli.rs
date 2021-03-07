@@ -14,7 +14,7 @@ pub struct Args {
     pub user: String,
     pub command: Vec<String>,
     pub log_level: log::Level,
-    pub method: Method,
+    pub method: Option<Method>,
 }
 
 pub fn build_cli() -> App<'static> {
@@ -34,12 +34,12 @@ pub fn build_cli() -> App<'static> {
         .arg(
             Arg::new("sudo")
                 .long("sudo")
-                .about("Use 'sudo' to change user (default)"),
+                .about("Use 'sudo' to change user"),
         )
         .arg(
             Arg::new("machinectl")
                 .long("machinectl")
-                .about("Use 'machinectl' to change user"),
+                .about("Use 'machinectl' to change user (default, if available)"),
         )
         .arg(
             Arg::new("machinectl-bare")
@@ -79,11 +79,13 @@ pub fn parse_args<T: Into<OsString> + Clone>(args: impl IntoIterator<Item = T>) 
             _ => Level::Trace,
         },
         method: if matches.is_present("machinectl") {
-            Method::Machinectl
+            Some(Method::Machinectl)
         } else if matches.is_present("machinectl-bare") {
-            Method::MachinectlBare
+            Some(Method::MachinectlBare)
+        } else if matches.is_present("sudo") {
+            Some(Method::Sudo)
         } else {
-            Method::Sudo
+            None
         },
     }
 }
