@@ -19,9 +19,17 @@ running applications directly under your primary user.
 
 Installation
 ------------
-The goal of ego is to come with sane defaults and be as easy as possible to set up.
+Ego aims to come with sane defaults and be as easy to set up.
 
-1. Make sure you [have Rust installed](https://www.rust-lang.org/tools/install) and run:
+Requirements:
+* [Rust & cargo](https://www.rust-lang.org/tools/install)
+* `libacl.so` library (Debian/Ubuntu: libacl1-dev; Fedora: libacl-devel; Arch: acl)
+* `machinectl` command *recommended* (Debian/Ubuntu/Fedora: systemd-container; Arch: systemd)
+
+  (Not needed when using `--sudo` mode, but some desktop functionality may not work).
+* `xdg-desktop-portal-gtk` recommended (Debian/Ubuntu/Fedora/Arch: xdg-desktop-portal-gtk)
+
+1. Run:
 
        cargo install ego
        sudo cp ~/.cargo/bin/ego /usr/local/bin/
