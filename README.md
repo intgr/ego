@@ -68,7 +68,7 @@ For sudo, add the following to `/etc/sudoers` (replace `<myname>` with your own 
 Changelog
 ---------
 ##### 1.1.0 (2021-03-07)
-* Default to `machinectl` if available, fall back to sudo otherwise (#47)
+* Default to `machinectl` if available, fall back to `sudo` otherwise (#47)
 * Documentation & minor improvements (#46, #48)
 
 ##### 0.4.1 (2021-01-29)
