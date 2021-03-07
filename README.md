@@ -12,8 +12,6 @@ ego (a.k.a Alter Ego)
 integrates with Wayland, Xorg, PulseAudio and xdg-desktop-portal. You may think of it as `xhost`
 for Wayland and PulseAudio. This is done using filesystem ACLs and `xhost` command.
 
-Work in progress. :)
-
 Disclaimer: **DO NOT RUN UNTRUSTED PROGRAMS VIA EGO.** However, using ego is more secure than
 running applications directly under your primary user.
 
@@ -69,6 +67,10 @@ For sudo, add the following to `/etc/sudoers` (replace `<myname>` with your own 
 
 Changelog
 ---------
+##### 1.1.0 (2021-03-07)
+* Default to `machinectl` if available, fall back to sudo otherwise (#47)
+* Documentation & minor improvements (#46, #48)
+
 ##### 0.4.1 (2021-01-29)
 * Fixed `--machinectl` on Ubuntu, Debian with dash shell (#42)
 * Fixed error reporting when command execution fails (#43)
