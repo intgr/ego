@@ -27,6 +27,7 @@ Requirements:
 * `machinectl` command *recommended* (Debian/Ubuntu/Fedora: systemd-container; Arch: systemd)
 
   (Not needed when using `--sudo` mode, but some desktop functionality may not work).
+* `xdg-desktop-portal-gtk` recommended (Debian/Ubuntu/Fedora/Arch: xdg-desktop-portal-gtk)
 
 1. Run:
 
