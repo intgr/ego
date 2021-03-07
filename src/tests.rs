@@ -19,7 +19,7 @@ macro_rules! string_vec {
 fn snapshot_match(path: &str, data: &[u8]) {
     if cfg!(feature = "update-snapshots") {
         let mut file = File::create(path).unwrap();
-        file.write(data.as_ref()).unwrap();
+        file.write_all(data.as_ref()).unwrap();
         file.flush().unwrap();
     } else {
         let mut snapshot_data = Vec::<u8>::new();
@@ -44,7 +44,7 @@ fn render_completion<G: Generator>() -> Vec<u8> {
     let mut buf = Vec::<u8>::new();
     let mut app = build_cli();
     clap_generate::generate::<G, _>(&mut app, "ego", &mut buf);
-    buf.write(b"\n").unwrap();
+    buf.write_all(b"\n").unwrap();
 
     buf
 }
