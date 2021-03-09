@@ -15,17 +15,19 @@ for Wayland and PulseAudio. This is done using filesystem ACLs and `xhost` comma
 Disclaimer: **DO NOT RUN UNTRUSTED PROGRAMS VIA EGO.** However, using ego is more secure than
 running applications directly under your primary user.
 
-Installation
-------------
+Setup
+-----
 Ego aims to come with sane defaults and be as easy to set up.
 
-Requirements:
+**Requirements:**
 * [Rust & cargo](https://www.rust-lang.org/tools/install)
 * `libacl.so` library (Debian/Ubuntu: libacl1-dev; Fedora: libacl-devel; Arch: acl)
-* `machinectl` command *recommended* (Debian/Ubuntu/Fedora: systemd-container; Arch: systemd)
 
-  (Not needed when using `--sudo` mode, but some desktop functionality may not work).
-* `xdg-desktop-portal-gtk` recommended (Debian/Ubuntu/Fedora/Arch: xdg-desktop-portal-gtk)
+**Recommended:** (Not needed when using `--sudo` mode, but some desktop functionality may not work).
+* `machinectl` command (Debian/Ubuntu/Fedora: systemd-container; Arch: systemd)
+* `xdg-desktop-portal-gtk` (Debian/Ubuntu/Fedora/Arch: xdg-desktop-portal-gtk)
+
+**Installation:**
 
 1. Run:
 
