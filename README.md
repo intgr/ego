@@ -17,7 +17,7 @@ running applications directly under your primary user.
 
 Setup
 -----
-Ego aims to come with sane defaults and be as easy to set up.
+Ego aims to come with sane defaults and be easy to set up.
 
 **Requirements:**
 * [Rust & cargo](https://www.rust-lang.org/tools/install)
