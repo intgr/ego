@@ -1,0 +1,11 @@
+/*
+ * Alter Ego: run desktop applications under a different local user
+ * Users in 'ego-users' group can invoke commands as 'ego' user
+ */
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.machine1.host-shell" &&
+        action.lookup("user") == "ego" &&
+        subject.isInGroup("ego-users")) {
+        return polkit.Result.YES;
+    }
+});

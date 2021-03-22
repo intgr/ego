@@ -1,0 +1,3 @@
+# Alter Ego: run desktop applications under a different local user
+# Users in 'ego-users' group can invoke commands as 'ego' user
+%ego-users      ALL=(ego) NOPASSWD:ALL

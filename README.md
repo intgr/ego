@@ -15,9 +15,19 @@ for Wayland and PulseAudio. This is done using filesystem ACLs and `xhost` comma
 Disclaimer: **DO NOT RUN UNTRUSTED PROGRAMS VIA EGO.** However, using ego is more secure than
 running applications directly under your primary user.
 
-Setup
------
-Ego aims to come with sane defaults and be as easy to set up.
+Distro packages
+---------------
+Distribution packages are available for:
+* Arch Linux (user-contributed package) https://aur.archlinux.org/packages/ego/
+
+After installing the package, add yourself to the `ego-users` group. After logout and login,
+the `ego` command should just work.
+
+([varia/README.md](varia/README.md) documents recommendations for distro packagers)
+
+Manual setup
+------------
+Ego aims to come with sane defaults and be easy to set up.
 
 **Requirements:**
 * [Rust & cargo](https://www.rust-lang.org/tools/install)
