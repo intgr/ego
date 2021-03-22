@@ -23,10 +23,10 @@ Distribution packages are available for:
 After installing the package, add yourself to the `ego-users` group. After logout and login,
 the `ego` command should just work.
 
-(`varia/README.md` documents recommendations for distro packagers)
+([varia/README.md](varia/README.md) documents recommendations for distro packagers)
 
-Setup
------
+Manual setup
+------------
 Ego aims to come with sane defaults and be easy to set up.
 
 **Requirements:**

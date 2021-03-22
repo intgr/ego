@@ -21,6 +21,6 @@ The sudoers and polkit rules files then permit switching users.
 
 * `ego.sysusers` → `/usr/lib/sysusers.d/ego.conf`
 * `ego.sudoers` → `/etc/sudoers.d/50_ego`
-* `ego.rules` → `/etc/polkit-1/rules.d/50-ego.rules`
+* `ego.rules` → `/usr/share/polkit-1/rules.d/50-ego.rules`
 
 Note: `ego.rules` requires systemd version >=247 and polkit >=0.106.

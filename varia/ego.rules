@@ -1,6 +1,6 @@
 /*
  * Alter Ego: run desktop applications under a different local user
- * Allow users in 'ego-users' group to invoke commands as 'ego'
+ * Users in 'ego-users' group can invoke commands as 'ego' user
  */
 polkit.addRule(function(action, subject) {
     if (action.id == "org.freedesktop.machine1.host-shell" &&
