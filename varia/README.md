@@ -19,7 +19,7 @@ And a separate group `ego-users` for users that are allowed to invoke commands a
 The `ego.sysusers` drop-in file should create them on distros that support sysusers.d.
 The sudoers and polkit rules files then permit switching users.
 
-* `ego.sysusers` → `/usr/lib/sysusers.d/ego.conf`
+* `ego.sysusers.conf` → `/usr/lib/sysusers.d/ego.conf`
 * `ego.sudoers` → `/etc/sudoers.d/50_ego`
 * `ego.rules` → `/usr/share/polkit-1/rules.d/50-ego.rules`
 
