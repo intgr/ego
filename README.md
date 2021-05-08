@@ -80,6 +80,12 @@ For sudo, add the following to `/etc/sudoers` (replace `<myname>` with your own 
 Changelog
 ---------
 
+##### 1.1.2 (2021-05-08)
+* Enable sudo askpass helper if SUDO_ASKPASS is set (#58)
+  * Example how to set up a GUI password prompt with sudo: https://askubuntu.com/a/314401
+  * Note: For a GUI password prompt with the machinectl mode, you need to run a
+    Polkit authentication agent instead
+
 ##### 1.1.1 (2021-03-23)
 * Include drop-in files for polkit, sudoers.d, sysusers.d -- for distro packages (#53)
 * Documentation tweaks (#51, #53)
