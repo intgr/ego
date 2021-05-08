@@ -347,7 +347,12 @@ fn run_sudo_command(
         );
     }
 
-    let mut args = vec!["-SHiu".to_string(), ctx.target_user.clone()];
+    let mut args = vec!["-Hiu".to_string(), ctx.target_user.clone()];
+    // If SUDO_ASKPASS envvar is set, add -A argument to use the askpass agent
+    if let Ok(Some(_)) = getenv_optional("SUDO_ASKPASS") {
+        debug!("SUDO_ASKPASS detected");
+        args.push("-A".into())
+    }
     args.extend(envvars);
     args.extend(remote_cmd);
 
