@@ -5,7 +5,7 @@ on:
   pull_request:
   schedule:
     # 16:21 UTC on Tuesdays
-    - cron: "21 16 * * tue"
+    - cron: "21 16 * * TUE"
   repository_dispatch:
     types: [tests]
 
