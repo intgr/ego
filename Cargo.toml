@@ -18,7 +18,7 @@ categories = ["command-line-utilities"]
 users = "0.11.0"
 simple-error = "0.2.3"
 posix-acl = "1.0.0"
-clap = "3.0.0-beta.2"
+clap = "=3.0.0-beta.2"
 log = { version = "0.4.14", features = ["std"] }
 ansi_term = "0.12.1"
 shell-words = "1.0.0"
@@ -28,4 +28,4 @@ default = []
 update-snapshots = []
 
 [dev-dependencies]
-clap_generate = "3.0.0-beta.2"
+clap_generate = "=3.0.0-beta.2"
