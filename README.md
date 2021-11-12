@@ -80,6 +80,9 @@ For sudo, add the following to `/etc/sudoers` (replace `<myname>` with your own 
 Changelog
 ---------
 
+##### 1.1.3 (2021-11-12)
+* Pin clap version (fixes #65) (#68)
+
 ##### 1.1.2 (2021-05-08)
 * Enable sudo askpass helper if SUDO_ASKPASS is set (#58)
   * Example how to set up a GUI password prompt with sudo: https://askubuntu.com/a/314401
