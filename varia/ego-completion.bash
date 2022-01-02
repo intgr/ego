@@ -44,4 +44,3 @@ _ego() {
 }
 
 complete -F _ego -o bashdefault -o default ego
-

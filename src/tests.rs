@@ -44,7 +44,10 @@ fn render_completion(generator: impl Generator) -> Vec<u8> {
     let mut buf = Vec::<u8>::new();
     let mut app = build_cli();
     clap_complete::generate(generator, &mut app, "ego", &mut buf);
-    buf.write_all(b"\n").unwrap();
+    // XXX clap_complete doesn't append newline to zsh completions.
+    if !buf.ends_with(b"\n") {
+        buf.push(b'\n');
+    }
 
     buf
 }
