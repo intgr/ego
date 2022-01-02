@@ -1,4 +1,4 @@
-use crate::{ErrorWithHint};
+use crate::ErrorWithHint;
 use log::debug;
 use std::io::ErrorKind;
 use std::os::unix::prelude::CommandExt;
