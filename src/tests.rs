@@ -40,10 +40,10 @@ fn snapshot_match(path: &str, data: &[u8]) {
     }
 }
 
-fn render_completion(shell: impl Generator) -> Vec<u8> {
+fn render_completion(generator: impl Generator) -> Vec<u8> {
     let mut buf = Vec::<u8>::new();
     let mut app = build_cli();
-    clap_complete::generate(shell, &mut app, "ego", &mut buf);
+    clap_complete::generate(generator, &mut app, "ego", &mut buf);
     buf.write_all(b"\n").unwrap();
 
     buf
@@ -52,7 +52,7 @@ fn render_completion(shell: impl Generator) -> Vec<u8> {
 /// Unit tests may seem like a weird place to update shell completion files, but this is like
 /// snapshot testing, which guarantees the file is never out of date.
 ///
-/// Also we don't have to lug around `clap_generate` code in the `ego` binary itself.
+/// Also we don't have to lug around `clap_complete` code in the `ego` binary itself.
 ///
 /// run 'cargo test --features=update-snapshots' to update
 ///
