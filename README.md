@@ -81,6 +81,10 @@ For sudo, add the following to `/etc/sudoers` (replace `<myname>` with your own 
 Changelog
 ---------
 
+##### 1.1.4 (2022-01-02)
+* Document xhost requirement, improve xhost error reporting (#76)
+* Upgrade to clap 3.0.0 stable (#71)
+
 ##### 1.1.3 (2021-11-12)
 * Pin clap version (fixes #65) (#68)
 
