@@ -32,6 +32,7 @@ Ego aims to come with sane defaults and be easy to set up.
 **Requirements:**
 * [Rust & cargo](https://www.rust-lang.org/tools/install)
 * `libacl.so` library (Debian/Ubuntu: libacl1-dev; Fedora: libacl-devel; Arch: acl)
+* `xhost` binary (Debian/Ubuntu: x11-xserver-utils; Fedora: xorg-xhost; Arch: xorg-xhost)
 
 **Recommended:** (Not needed when using `--sudo` mode, but some desktop functionality may not work).
 * `machinectl` command (Debian/Ubuntu/Fedora: systemd-container; Arch: systemd)

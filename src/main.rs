@@ -3,19 +3,17 @@ extern crate simple_error;
 
 use crate::cli::{parse_args, Method};
 use crate::errors::{print_error, AnyErr, ErrorWithHint};
-use crate::util::{have_command, sd_booted};
+use crate::util::{exec_command, have_command, run_command, sd_booted};
 use log::{debug, info, warn};
 use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
 use simple_error::SimpleError;
 use std::env::VarError;
 use std::fs::DirBuilder;
-use std::io::ErrorKind;
 use std::os::unix::fs::DirBuilderExt;
 use std::os::unix::fs::PermissionsExt;
-use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
-use std::process::{exit, Command};
-use std::{env, fs, io};
+use std::process::exit;
+use std::{env, fs};
 use users::os::unix::UserExt;
 use users::{get_user_by_name, get_user_by_uid, uid_t, User};
 
@@ -195,18 +193,10 @@ fn prepare_x11(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
         return Ok(vec![]);
     }
 
-    let grant = format!("+si:localuser:{}", ctx.target_user);
-    let ret = Command::new("xhost").arg(&grant).output()?;
-    if !ret.status.success() {
-        bail!(
-            "xhost returned {}:\n{}",
-            ret.status.code().unwrap_or(999),
-            String::from_utf8_lossy(&ret.stderr)
-        );
-    }
+    let grant = format!("-ak +si:localuser:{}", ctx.target_user);
+    run_command("xhost", &[grant])?;
     // TODO should also test /tmp/.X11-unix/X0 permissions?
 
-    debug!("X11 configured to allow {}", grant);
     Ok(vec![format!("DISPLAY={}", display.unwrap())])
 }
 
@@ -305,20 +295,6 @@ fn ensure_ego_rundir(ctx: &EgoContext) -> Result<PathBuf, AnyErr> {
     // Set ACL either way, because target user may be different in every run.
     add_file_acl(path.as_path(), ctx.target_uid, ACL_EXECUTE)?;
     Ok(path)
-}
-
-fn exec_command(program: &str, args: &[String]) -> Result<(), ErrorWithHint> {
-    // If this call returns at all, it was an error
-    let err: io::Error = Command::new(program).args(args).exec();
-
-    Err(ErrorWithHint::new(
-        format!("Failed executing {}: {}", program, err),
-        if err.kind() == ErrorKind::NotFound {
-            format!("Try installing package that contains command '{}'", program)
-        } else {
-            format!("Complete command: {} {}", program, shell_words::join(args))
-        },
-    ))
 }
 
 /// Detect which method should be used
