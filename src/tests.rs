@@ -2,8 +2,8 @@ use crate::cli::{build_cli, parse_args, Method};
 use crate::util::have_command;
 use crate::{get_wayland_socket, EgoContext};
 use ansi_term::Colour::{Cyan, Red};
-use clap_generate::generators::{Bash, Fish, Zsh};
-use clap_generate::Generator;
+use clap_complete::shells::{Bash, Fish, Zsh};
+use clap_complete::Generator;
 use log::Level;
 use std::env;
 use std::fs::File;
@@ -40,10 +40,10 @@ fn snapshot_match(path: &str, data: &[u8]) {
     }
 }
 
-fn render_completion<G: Generator>() -> Vec<u8> {
+fn render_completion(shell: impl Generator) -> Vec<u8> {
     let mut buf = Vec::<u8>::new();
     let mut app = build_cli();
-    clap_generate::generate::<G, _>(&mut app, "ego", &mut buf);
+    clap_complete::generate(shell, &mut app, "ego", &mut buf);
     buf.write_all(b"\n").unwrap();
 
     buf
@@ -62,9 +62,9 @@ fn render_completion<G: Generator>() -> Vec<u8> {
 /// ```
 #[test]
 fn shell_completions() {
-    snapshot_match("varia/ego-completion.zsh", &render_completion::<Zsh>());
-    snapshot_match("varia/ego-completion.bash", &render_completion::<Bash>());
-    snapshot_match("varia/ego-completion.fish", &render_completion::<Fish>());
+    snapshot_match("varia/ego-completion.zsh", &render_completion(Zsh));
+    snapshot_match("varia/ego-completion.bash", &render_completion(Bash));
+    snapshot_match("varia/ego-completion.fish", &render_completion(Fish));
 }
 
 fn test_context() -> EgoContext {
