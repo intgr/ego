@@ -193,7 +193,7 @@ fn prepare_x11(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
         return Ok(vec![]);
     }
 
-    let grant = format!("-ak +si:localuser:{}", ctx.target_user);
+    let grant = format!("+si:localuser:{}", ctx.target_user);
     run_command("xhost", &[grant])?;
     // TODO should also test /tmp/.X11-unix/X0 permissions?
 
