@@ -1,8 +1,6 @@
 //! Logging for command line output.
 //! Adapted from simple_logger by Sam Clements: https://github.com/borntyping/rust-simple_logger
 
-extern crate log;
-
 use ansi_term::Colour::{Purple, Red, Yellow};
 use log::{trace, Level, Log, Metadata, Record};
 

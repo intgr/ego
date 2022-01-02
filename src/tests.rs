@@ -99,6 +99,11 @@ fn wayland_socket() {
 }
 
 #[test]
+fn test_cli() {
+    build_cli().debug_assert();
+}
+
+#[test]
 fn test_parse_args() {
     // Empty command line (defaults)
     let args = parse_args(vec!["ego"]);
