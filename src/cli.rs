@@ -20,37 +20,36 @@ pub struct Args {
 pub fn build_cli() -> App<'static> {
     App::new("Alter Ego: run desktop applications under a different local user")
         .setting(AppSettings::TrailingVarArg)
-        .setting(AppSettings::DisableVersion)
-        .setting(AppSettings::ColoredHelp)
+        .setting(AppSettings::DisableVersionFlag)
         .arg(
             Arg::new("user")
                 .short('u')
                 .long("user")
                 .value_name("USER")
-                .about("Specify a username (default: ego)")
+                .help("Specify a username (default: ego)")
                 .takes_value(true)
                 .value_hint(ValueHint::Username),
         )
         .arg(
             Arg::new("sudo")
                 .long("sudo")
-                .about("Use 'sudo' to change user"),
+                .help("Use 'sudo' to change user"),
         )
         .arg(
             Arg::new("machinectl")
                 .long("machinectl")
-                .about("Use 'machinectl' to change user (default, if available)"),
+                .help("Use 'machinectl' to change user (default, if available)"),
         )
         .arg(
             Arg::new("machinectl-bare")
                 .long("machinectl-bare")
-                .about("Use 'machinectl' but skip xdg-desktop-portal setup"),
+                .help("Use 'machinectl' but skip xdg-desktop-portal setup"),
         )
         .group(ArgGroup::new("method").args(&["sudo", "machinectl", "machinectl-bare"]))
         .arg(
             Arg::new("command")
-                .about("Command name and arguments to run (default: user shell)")
-                .multiple(true)
+                .help("Command name and arguments to run (default: user shell)")
+                .multiple_values(true)
                 .value_hint(ValueHint::CommandWithArguments),
         )
         .arg(
@@ -58,7 +57,7 @@ pub fn build_cli() -> App<'static> {
                 .short('v')
                 .long("verbose")
                 .multiple_occurrences(true)
-                .about("Verbose output. Use multiple times for more output."),
+                .help("Verbose output. Use multiple times for more output."),
         )
 }
 

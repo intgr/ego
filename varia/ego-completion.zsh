@@ -15,25 +15,22 @@ _ego() {
 
     local context curcontext="$curcontext" state line
     _arguments "${_arguments_options[@]}" \
-'-u+[Specify a username (default: ego)]: :_users' \
-'--user=[Specify a username (default: ego)]: :_users' \
+'-u+[Specify a username (default: ego)]:USER:_users' \
+'--user=[Specify a username (default: ego)]:USER:_users' \
+'-h[Print help information]' \
+'--help[Print help information]' \
 '--sudo[Use '\''sudo'\'' to change user]' \
 '--machinectl[Use '\''machinectl'\'' to change user (default, if available)]' \
 '--machinectl-bare[Use '\''machinectl'\'' but skip xdg-desktop-portal setup]' \
 '*-v[Verbose output. Use multiple times for more output.]' \
 '*--verbose[Verbose output. Use multiple times for more output.]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
 '*::command -- Command name and arguments to run (default\: user shell):_cmdambivalent' \
 && ret=0
-    
 }
 
 (( $+functions[_ego_commands] )) ||
 _ego_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'ego commands' commands "$@"
 }
 

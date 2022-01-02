@@ -9,10 +9,9 @@ _ego() {
     for i in ${COMP_WORDS[@]}
     do
         case "${i}" in
-            ego)
+            "$1")
                 cmd="ego"
                 ;;
-            
             *)
                 ;;
         esac
@@ -20,18 +19,17 @@ _ego() {
 
     case "${cmd}" in
         ego)
-            opts=" -u -v -h  --user --sudo --machinectl --machinectl-bare --verbose --help  <command>... "
+            opts="-h -u -v --help --user --sudo --machinectl --machinectl-bare --verbose <command>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                
                 --user)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -u)
+                -u)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -42,9 +40,7 @@ _ego() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        
     esac
 }
 
 complete -F _ego -o bashdefault -o default ego
-
