@@ -21,7 +21,7 @@ posix-acl = "1.0.0"
 clap = "3.0.0"
 log = { version = "0.4.14", features = ["std"] }
 ansi_term = "0.12.1"
-shell-words = "1.0.0"
+shell-words = "1.1.0"
 
 [features]
 default = []
