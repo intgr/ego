@@ -1,4 +1,4 @@
-use clap::{App, AppSettings, Arg, ArgGroup, ValueHint};
+use clap::{Arg, ArgGroup, Command, ValueHint};
 use log::Level;
 use std::ffi::OsString;
 
@@ -17,10 +17,10 @@ pub struct Args {
     pub method: Option<Method>,
 }
 
-pub fn build_cli() -> App<'static> {
-    App::new("Alter Ego: run desktop applications under a different local user")
-        .setting(AppSettings::TrailingVarArg)
-        .setting(AppSettings::DisableVersionFlag)
+pub fn build_cli() -> Command<'static> {
+    Command::new("Alter Ego: run desktop applications under a different local user")
+        .trailing_var_arg(true)
+        .disable_version_flag(true)
         .arg(
             Arg::new("user")
                 .short('u')
