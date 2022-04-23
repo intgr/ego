@@ -1,14 +1,17 @@
-use crate::cli::{build_cli, parse_args, Method};
-use crate::util::have_command;
-use crate::{get_wayland_socket, EgoContext};
-use ansi_term::Colour::{Cyan, Red};
-use clap_complete::shells::{Bash, Fish, Zsh};
-use clap_complete::Generator;
-use log::Level;
 use std::env;
 use std::fs::File;
 use std::io::{ErrorKind, Read, Write};
 use std::path::PathBuf;
+
+use ansi_term::Colour::{Cyan, Red};
+use clap_complete::shells::{Bash, Fish, Zsh};
+use clap_complete::Generator;
+use log::Level;
+use simple_error::SimpleError;
+
+use crate::cli::{build_cli, parse_args, Method};
+use crate::util::have_command;
+use crate::{get_wayland_socket, x11_add_acl, EgoContext};
 
 /// `vec![]` constructor that converts arguments to String
 macro_rules! string_vec {
@@ -96,6 +99,14 @@ fn wayland_socket() {
         get_wayland_socket(&ctx).unwrap().unwrap(),
         PathBuf::from("/tmp/wayland-7")
     );
+}
+
+#[test]
+fn test_x11_error() {
+    env::remove_var("DISPLAY");
+
+    let err = x11_add_acl("test", "test").unwrap_err();
+    assert_eq!(format!("{err}"), "Could not open X11 display");
 }
 
 #[test]
