@@ -59,7 +59,7 @@ fn render_completion(generator: impl Generator) -> Vec<u8> {
 ///
 /// run 'cargo test --features=update-snapshots' to update
 ///
-/// Usage with zsh:
+/// Usage with zsh:k
 /// ```
 /// cp varia/ego-completion.zsh /usr/local/share/zsh/site-functions/_ego
 /// ```

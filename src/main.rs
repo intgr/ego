@@ -1,4 +1,3 @@
-#![feature(core_ffi_c)]
 #[macro_use]
 extern crate simple_error;
 
@@ -16,7 +15,7 @@ use simple_error::SimpleError;
 use users::os::unix::UserExt;
 use users::{get_user_by_name, get_user_by_uid, uid_t, User};
 
-use crate::cli::{parse_args, Args, Method};
+use crate::cli::{parse_args, Method};
 use crate::errors::{print_error, AnyErr, ErrorWithHint};
 use crate::util::{exec_command, have_command, run_command, sd_booted};
 use crate::x11::x11_add_acl;
@@ -140,7 +139,7 @@ fn create_context(username: String) -> Result<EgoContext, AnyErr> {
     let runtime_dir = getenv_path("XDG_RUNTIME_DIR")?;
     Ok(EgoContext {
         runtime_dir,
-        target_user: username.clone(),
+        target_user: username,
         target_uid: user.uid(),
         target_user_shell: user.shell().into(),
     })

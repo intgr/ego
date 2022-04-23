@@ -1,5 +1,5 @@
-use std::ffi::{c_char, c_int};
 use std::mem;
+use std::os::raw::{c_char, c_int};
 use std::ptr::null_mut;
 
 use x11::xlib;
