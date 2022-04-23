@@ -15,6 +15,7 @@ pub struct Args {
     pub command: Vec<String>,
     pub log_level: log::Level,
     pub method: Option<Method>,
+    pub old_xhost: bool,
 }
 
 pub fn build_cli() -> Command<'static> {
@@ -44,6 +45,11 @@ pub fn build_cli() -> Command<'static> {
             Arg::new("machinectl-bare")
                 .long("machinectl-bare")
                 .help("Use 'machinectl' but skip xdg-desktop-portal setup"),
+        )
+        .arg(
+            Arg::new("old-xhost")
+                .long("old-xhost")
+                .help("Execute 'xhost' command instead of connecting to X11 directly"),
         )
         .group(ArgGroup::new("method").args(&["sudo", "machinectl", "machinectl-bare"]))
         .arg(
@@ -77,6 +83,7 @@ pub fn parse_args<T: Into<OsString> + Clone>(args: impl IntoIterator<Item = T>) 
             2 => Level::Debug,
             _ => Level::Trace,
         },
+        old_xhost: matches.is_present("old-xhost"),
         method: if matches.is_present("machinectl") {
             Some(Method::Machinectl)
         } else if matches.is_present("machinectl-bare") {

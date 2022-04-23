@@ -1,12 +1,7 @@
+#![feature(core_ffi_c)]
 #[macro_use]
 extern crate simple_error;
 
-use crate::cli::{parse_args, Method};
-use crate::errors::{print_error, AnyErr, ErrorWithHint};
-use crate::util::{exec_command, have_command, run_command, sd_booted};
-use log::{debug, info, warn};
-use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
-use simple_error::SimpleError;
 use std::env::VarError;
 use std::fs::DirBuilder;
 use std::os::unix::fs::DirBuilderExt;
@@ -14,8 +9,17 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::exit;
 use std::{env, fs};
+
+use log::{debug, info, warn};
+use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
+use simple_error::SimpleError;
 use users::os::unix::UserExt;
 use users::{get_user_by_name, get_user_by_uid, uid_t, User};
+
+use crate::cli::{parse_args, Args, Method};
+use crate::errors::{print_error, AnyErr, ErrorWithHint};
+use crate::util::{exec_command, have_command, run_command, sd_booted};
+use crate::x11::x11_add_acl;
 
 mod cli;
 mod errors;
@@ -23,6 +27,7 @@ mod logging;
 #[cfg(test)]
 mod tests;
 mod util;
+mod x11;
 
 struct EgoContext {
     runtime_dir: PathBuf,
@@ -51,7 +56,7 @@ fn main_inner() -> Result<(), AnyErr> {
         Err(msg) => bail!("Error preparing Wayland: {}", msg),
         Ok(ret) => vars.extend(ret),
     }
-    match prepare_x11(&ctx) {
+    match prepare_x11(&ctx, args.old_xhost) {
         Err(msg) => bail!("Error preparing X11: {}", msg),
         Ok(ret) => vars.extend(ret),
     }
@@ -135,7 +140,7 @@ fn create_context(username: String) -> Result<EgoContext, AnyErr> {
     let runtime_dir = getenv_path("XDG_RUNTIME_DIR")?;
     Ok(EgoContext {
         runtime_dir,
-        target_user: username,
+        target_user: username.clone(),
         target_uid: user.uid(),
         target_user_shell: user.shell().into(),
     })
@@ -186,15 +191,20 @@ fn prepare_wayland(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
 
 /// Detect `DISPLAY` and run `xhost` to grant permissions.
 /// Return environment vars for `DISPLAY`
-fn prepare_x11(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
+fn prepare_x11(ctx: &EgoContext, old_xhost: bool) -> Result<Vec<String>, AnyErr> {
     let display = getenv_optional("DISPLAY")?;
     if display.is_none() {
         debug!("X11: DISPLAY not set, skipping");
         return Ok(vec![]);
     }
 
-    let grant = format!("+si:localuser:{}", ctx.target_user);
-    run_command("xhost", &[grant])?;
+    if old_xhost {
+        warn!("--old-xhost is deprecated. If there are issues with the new method, please report a bug.");
+        let grant = format!("+si:localuser:{}", ctx.target_user);
+        run_command("xhost", &[grant])?;
+    } else {
+        x11_add_acl("localuser", ctx.target_user.as_str())?;
+    }
     // TODO should also test /tmp/.X11-unix/X0 permissions?
 
     Ok(vec![format!("DISPLAY={}", display.unwrap())])

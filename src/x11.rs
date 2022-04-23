@@ -1,0 +1,71 @@
+use std::ffi::{c_char, c_int};
+use std::mem;
+use std::ptr::null_mut;
+
+use x11::xlib;
+use x11::xlib::{FamilyServerInterpreted, XAddHost, XCloseDisplay, XHostAddress, XOpenDisplay};
+
+use crate::AnyErr;
+
+/// Based on code by Vadzim Dambrouski from:
+/// https://github.com/pftbest/x11-rust-example/blob/master/src/lib.rs
+pub struct Display {
+    raw: *mut xlib::Display,
+}
+
+impl Display {
+    pub fn open() -> Result<Self, AnyErr> {
+        let display = unsafe { XOpenDisplay(null_mut()) };
+        if display.is_null() {
+            bail!("Could not open X11 display");
+        }
+        Ok(Display { raw: display })
+    }
+}
+
+impl Drop for Display {
+    fn drop(&mut self) {
+        unsafe { XCloseDisplay(self.raw) };
+    }
+}
+
+/// https://www.x.org/releases/X11R7.5/doc/man/man3/XAddHost.3.html#sect4
+/// TODO contribute to Rust x11 bindings?
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct XServerInterpretedAddress {
+    pub typelength: c_int,
+    pub valuelength: c_int,
+    pub type_: *mut c_char,
+    pub value: *mut c_char,
+}
+
+impl XServerInterpretedAddress {
+    pub fn new(type_: &str, value: &str) -> XServerInterpretedAddress {
+        XServerInterpretedAddress {
+            typelength: type_.len() as c_int,
+            valuelength: value.len() as c_int,
+            type_: type_.as_ptr() as *mut c_char,
+            value: value.as_ptr() as *mut c_char,
+        }
+    }
+}
+
+pub fn x11_add_acl(type_: &str, value: &str) -> Result<(), AnyErr> {
+    let display = Display::open()?;
+
+    // Construct message
+    let mut siaddr = XServerInterpretedAddress::new(type_, value);
+    let mut acl = XHostAddress {
+        family: FamilyServerInterpreted,
+        address: &mut siaddr as *mut _ as *mut c_char,
+        length: mem::size_of::<XServerInterpretedAddress>() as c_int,
+    };
+    // Doc: https://www.x.org/releases/X11R7.5/doc/man/man3/XAddHost.3.html
+    let ret = unsafe { XAddHost(display.raw, &mut acl) };
+    // According to xhost code, return 1 is success
+    if ret != 1 {
+        bail!("XAddHost returned {}", ret);
+    }
+    Ok(())
+}
