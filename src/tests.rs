@@ -11,6 +11,7 @@ use snapbox::{file, Data};
 
 use crate::cli::{build_cli, parse_args, Method};
 use crate::util::have_command;
+use crate::x11::x11_add_acl;
 use crate::{check_user_homedir, get_wayland_socket, EgoContext};
 
 /// `vec![]` constructor that converts arguments to String
@@ -48,7 +49,7 @@ fn render_completion(generator: impl Generator) -> Data {
 ///
 /// Run `SNAPSHOTS=overwrite cargo test` to update
 ///
-/// Usage with zsh:
+/// Usage with zsh:k
 /// ```
 /// cp varia/ego-completion.zsh /usr/local/share/zsh/site-functions/_ego
 /// ```
@@ -105,6 +106,14 @@ fn wayland_socket() {
         get_wayland_socket(&ctx).unwrap().unwrap(),
         PathBuf::from("/tmp/wayland-7")
     );
+}
+
+#[test]
+fn test_x11_error() {
+    env::remove_var("DISPLAY");
+
+    let err = x11_add_acl("test", "test").unwrap_err();
+    assert_eq!(format!("{err}"), "Could not open X11 display");
 }
 
 #[test]
