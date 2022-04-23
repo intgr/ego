@@ -81,8 +81,8 @@ For sudo, add the following to `/etc/sudoers` (replace `<myname>` with your own 
 Changelog
 ---------
 
-##### unreleased
-* Use libX11 directly instead of executing `xhost` command
+##### Unreleased
+* Use libX11 directly instead of executing `xhost` command (#89)
 
 ##### 1.1.5 (2022-01-02)
 * Document xhost requirement, improve xhost error reporting (#76)
