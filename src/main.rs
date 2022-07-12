@@ -337,6 +337,7 @@ fn run_sudo_command(
     Ok(())
 }
 
+#[allow(clippy::format_push_string)]
 fn machinectl_remote_command(remote_cmd: Vec<String>, envvars: Vec<String>, bare: bool) -> String {
     let mut cmd = String::new();
 
