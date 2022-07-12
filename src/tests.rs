@@ -7,7 +7,6 @@ use ansi_term::Colour::{Cyan, Red};
 use clap_complete::shells::{Bash, Fish, Zsh};
 use clap_complete::Generator;
 use log::Level;
-use simple_error::SimpleError;
 
 use crate::cli::{build_cli, parse_args, Method};
 use crate::util::have_command;
