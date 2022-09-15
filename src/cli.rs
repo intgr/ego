@@ -2,7 +2,7 @@ use clap::{Arg, ArgGroup, Command, ValueHint};
 use log::Level;
 use std::ffi::OsString;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Method {
     Sudo,
     Machinectl,
@@ -13,7 +13,7 @@ pub enum Method {
 pub struct Args {
     pub user: String,
     pub command: Vec<String>,
-    pub log_level: log::Level,
+    pub log_level: Level,
     pub method: Option<Method>,
 }
 
