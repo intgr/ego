@@ -1,0 +1,24 @@
+name: Release build
+on:
+  release:
+    types: [created]
+
+env:
+  DOCKER_BUILDKIT: 1
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build
+        run: docker build . --pull -f varia/Dockerfile.ci --tag ego-build
+      - name: Get binary file
+        run: |
+          mkdir -p dist
+          docker run --rm ego-build cat target/release/ego > dist/ego
+          cd dist && tar czf ego-x86_64-linux.tar.gz ego
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ego-x86_64-linux.tar.gz
+          path: dist/ego-x86_64-linux.tar.gz
+          if-no-files-found: error

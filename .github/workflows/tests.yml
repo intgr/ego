@@ -17,10 +17,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build
-        run: docker build . --pull -f varia/Dockerfile.tests --tag ego-build
+        run: docker build . --pull -f varia/Dockerfile.ci --tag ego-build
       - name: Test suite
         run: docker run --rm ego-build cargo test --color=always
       - name: Clippy lints
         run: docker run --rm ego-build cargo clippy --color=always
       - name: rustfmt
         run: docker run --rm ego-build cargo fmt -- --color=always --check
+      - uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: path/to/artifact/
+          if-no-files-found: error

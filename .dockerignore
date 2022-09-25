@@ -3,4 +3,4 @@ _local
 .idea
 .git
 .github
-varia/Dockerfile.tests
+varia/Dockerfile.ci
