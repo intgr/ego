@@ -24,8 +24,13 @@ jobs:
         run: docker run --rm ego-build cargo clippy --color=always
       - name: rustfmt
         run: docker run --rm ego-build cargo fmt -- --color=always --check
+      - name: Get binary file
+        run: |
+          mkdir -p dist
+          docker run --rm ego-build cat target/release/ego > dist/ego
+          cd dist && tar czf ego-x86_64-linux.tar.gz ego
       - uses: actions/upload-artifact@v3
         with:
-          name: my-artifact
-          path: path/to/artifact/
+          name: ego-x86_64-linux.tar.gz
+          path: dist/ego-x86_64-linux.tar.gz
           if-no-files-found: error
