@@ -7,7 +7,7 @@ For shell completions to work, these files should be installed as:
 * `ego-completion.fish` → `/usr/share/fish/vendor_completions.d/ego.fish`
 
 These files are auto-generated with `clap_generate`. To update them, run
-`cargo test --features=update-snapshots`
+`SNAPSHOTS=overwrite cargo test`
 
 Packaging ego
 -------------

@@ -1,43 +1,17 @@
-use crate::cli::{build_cli, parse_args, Method};
-use crate::util::have_command;
-use crate::{get_wayland_socket, EgoContext};
-use ansi_term::Colour::{Cyan, Red};
+use std::env;
+use std::path::PathBuf;
+
 use clap_complete::shells::{Bash, Fish, Zsh};
 use clap_complete::Generator;
 use log::Level;
-use std::env;
-use std::fs::File;
-use std::io::{ErrorKind, Read, Write};
-use std::path::PathBuf;
+
+use crate::cli::{build_cli, parse_args, Method};
+use crate::util::have_command;
+use crate::{get_wayland_socket, EgoContext};
 
 /// `vec![]` constructor that converts arguments to String
 macro_rules! string_vec {
     ($($x:expr),*) => (vec![$($x.to_string()),*] as Vec<String>);
-}
-
-/// Helper for snapshot testing, we abuse it to keep shell completions up to date.
-fn snapshot_match(path: &str, data: &[u8]) {
-    if cfg!(feature = "update-snapshots") {
-        let mut file = File::create(path).unwrap();
-        file.write_all(data.as_ref()).unwrap();
-        file.flush().unwrap();
-    } else {
-        let mut snapshot_data = Vec::<u8>::new();
-        match File::open(path) {
-            Err(e) if e.kind() == ErrorKind::NotFound => {}
-            Err(e) => panic!("{}: {}", path, e),
-            Ok(mut file) => {
-                file.read_to_end(&mut snapshot_data).unwrap();
-            }
-        }
-        if data != snapshot_data {
-            panic!(
-                "\n{}\n{}\n",
-                Red.paint(format!("Snapshot {} out of date", path)),
-                Cyan.paint("HINT: run 'cargo test --features=update-snapshots' to update")
-            );
-        }
-    }
 }
 
 fn render_completion(generator: impl Generator) -> Vec<u8> {
@@ -52,22 +26,32 @@ fn render_completion(generator: impl Generator) -> Vec<u8> {
     buf
 }
 
-/// Unit tests may seem like a weird place to update shell completion files, but this is like
-/// snapshot testing, which guarantees the file is never out of date.
+/// Unit tests may seem like a weird place to update shell completion files, but snapshot testing
+/// guarantees the files are never out of date.
 ///
 /// Also we don't have to lug around `clap_complete` code in the `ego` binary itself.
 ///
-/// run 'cargo test --features=update-snapshots' to update
+/// Run `SNAPSHOTS=overwrite cargo test` to update
 ///
 /// Usage with zsh:
 /// ```
 /// cp varia/ego-completion.zsh /usr/local/share/zsh/site-functions/_ego
 /// ```
 #[test]
-fn shell_completions() {
-    snapshot_match("varia/ego-completion.zsh", &render_completion(Zsh));
-    snapshot_match("varia/ego-completion.bash", &render_completion(Bash));
-    snapshot_match("varia/ego-completion.fish", &render_completion(Fish));
+fn shell_completion_zsh() {
+    snapbox::assert_eq_path("varia/ego-completion.zsh", render_completion(Zsh));
+}
+
+/// Run `SNAPSHOTS=overwrite cargo test` to update
+#[test]
+fn shell_completion_bash() {
+    snapbox::assert_eq_path("varia/ego-completion.bash", render_completion(Bash));
+}
+
+/// Run `SNAPSHOTS=overwrite cargo test` to update
+#[test]
+fn shell_completion_fish() {
+    snapbox::assert_eq_path("varia/ego-completion.fish", render_completion(Fish));
 }
 
 fn test_context() -> EgoContext {
@@ -130,6 +114,14 @@ fn test_parse_args() {
     assert_eq!(
         parse_args(vec!["ego", "--machinectl"]).method,
         Some(Method::Machinectl)
+    );
+}
+
+#[test]
+fn test_cli_help() {
+    snapbox::assert_eq_path(
+        "src/snapshots/ego.help",
+        build_cli().render_help().to_string(),
     );
 }
 
