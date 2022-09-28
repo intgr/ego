@@ -32,20 +32,20 @@ pub fn build_cli() -> Command {
         .arg(
             Arg::new("sudo")
                 .long("sudo")
-                .help("Use 'sudo' to change user")
-                .action(ArgAction::SetTrue),
+                .action(ArgAction::SetTrue)
+                .help("Use 'sudo' to change user"),
         )
         .arg(
             Arg::new("machinectl")
                 .long("machinectl")
-                .help("Use 'machinectl' to change user (default, if available)")
-                .action(ArgAction::SetTrue),
+                .action(ArgAction::SetTrue)
+                .help("Use 'machinectl' to change user (default, if available)"),
         )
         .arg(
             Arg::new("machinectl-bare")
                 .long("machinectl-bare")
-                .help("Use 'machinectl' but skip xdg-desktop-portal setup")
-                .action(ArgAction::SetTrue),
+                .action(ArgAction::SetTrue)
+                .help("Use 'machinectl' but skip xdg-desktop-portal setup"),
         )
         .group(ArgGroup::new("method").args(&["sudo", "machinectl", "machinectl-bare"]))
         .arg(
