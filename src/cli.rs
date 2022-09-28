@@ -18,7 +18,8 @@ pub struct Args {
 }
 
 pub fn build_cli() -> Command {
-    Command::new("Alter Ego: run desktop applications under a different local user")
+    Command::new("ego")
+        .about("Alter Ego: run desktop applications under a different local user")
         .disable_version_flag(true)
         .arg(
             Arg::new("user")
