@@ -1,4 +1,6 @@
-Usage: Alter Ego: run desktop applications under a different local user [OPTIONS] [command]...
+Alter Ego: run desktop applications under a different local user
+
+Usage: ego [OPTIONS] [command]...
 
 Arguments:
   [command]...  Command name and arguments to run (default: user shell)
