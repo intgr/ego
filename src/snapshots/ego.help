@@ -1,0 +1,12 @@
+Usage: Alter Ego: run desktop applications under a different local user [OPTIONS] [command]...
+
+Arguments:
+  [command]...  Command name and arguments to run (default: user shell)
+
+Options:
+  -u, --user <USER>      Specify a username (default: ego) [default: ego]
+      --sudo             Use 'sudo' to change user
+      --machinectl       Use 'machinectl' to change user (default, if available)
+      --machinectl-bare  Use 'machinectl' but skip xdg-desktop-portal setup
+  -v, --verbose...       Verbose output. Use multiple times for more output.
+  -h, --help             Print help information
