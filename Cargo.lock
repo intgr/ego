@@ -57,7 +57,7 @@ checksum = "1ed5341b2301a26ab80be5cbdced622e80ed808483c52e45e3310a877d3b37d7"
 dependencies = [
  "atty",
  "bitflags",
- "clap_lex",
+ "clap_lex 0.2.4",
  "indexmap",
  "strsim",
  "termcolor",
@@ -65,12 +65,22 @@ dependencies = [
 ]
 
 [[package]]
-name = "clap_complete"
-version = "3.2.5"
+name = "clap"
+version = "4.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f7a2e0a962c45ce25afce14220bc24f9dade0a1787f185cecf96bfba7847cd8"
+checksum = "422592638015fe46332afb8fbf9361d9fa2d498d05c0c384e28710b4639e33a5"
 dependencies = [
- "clap",
+ "bitflags",
+ "clap_lex 0.3.0",
+]
+
+[[package]]
+name = "clap_complete"
+version = "4.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "32b2326335cf37df6f430050fc5de9370726bb76e5a35df80f2d0855e745bee8"
+dependencies = [
+ "clap 4.0.0",
 ]
 
 [[package]]
@@ -83,11 +93,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "clap_lex"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d4198f73e42b4936b35b5bb248d81d2b595ecb170da0bac7655c54eedfa8da8"
+dependencies = [
+ "os_str_bytes",
+]
+
+[[package]]
 name = "ego"
 version = "1.1.5"
 dependencies = [
  "ansi_term",
- "clap",
+ "clap 3.2.21",
  "clap_complete",
  "log",
  "posix-acl",
