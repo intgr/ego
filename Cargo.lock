@@ -55,13 +55,23 @@ version = "3.2.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ed5341b2301a26ab80be5cbdced622e80ed808483c52e45e3310a877d3b37d7"
 dependencies = [
+ "bitflags",
+ "clap_lex 0.2.4",
+ "indexmap",
+ "textwrap",
+]
+
+[[package]]
+name = "clap"
+version = "4.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd03107d0f87139c1774a15f3db2165b0652b5460c58c27e561f89c20c599eaf"
+dependencies = [
  "atty",
  "bitflags",
- "clap_lex",
- "indexmap",
+ "clap_lex 0.3.0",
  "strsim",
  "termcolor",
- "textwrap",
 ]
 
 [[package]]
@@ -70,7 +80,7 @@ version = "3.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f7a2e0a962c45ce25afce14220bc24f9dade0a1787f185cecf96bfba7847cd8"
 dependencies = [
- "clap",
+ "clap 3.2.21",
 ]
 
 [[package]]
@@ -83,11 +93,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "clap_lex"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d4198f73e42b4936b35b5bb248d81d2b595ecb170da0bac7655c54eedfa8da8"
+dependencies = [
+ "os_str_bytes",
+]
+
+[[package]]
 name = "ego"
 version = "1.1.5"
 dependencies = [
  "ansi_term",
- "clap",
+ "clap 4.0.1",
  "clap_complete",
  "log",
  "posix-acl",
