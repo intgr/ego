@@ -48,7 +48,7 @@ pub fn build_cli() -> Command {
                 .action(ArgAction::SetTrue)
                 .help("Use 'machinectl' but skip xdg-desktop-portal setup"),
         )
-        .group(ArgGroup::new("method").args(&["sudo", "machinectl", "machinectl-bare"]))
+        .group(ArgGroup::new("method").args(["sudo", "machinectl", "machinectl-bare"]))
         .arg(
             Arg::new("command")
                 .help("Command name and arguments to run (default: user shell)")
