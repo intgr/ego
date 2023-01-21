@@ -88,7 +88,7 @@ checksum = "82a90734b3d5dcf656e7624cca6bce9c3a90ee11f900e80141a7427ccfb3d317"
 
 [[package]]
 name = "ego"
-version = "1.1.5"
+version = "1.1.6"
 dependencies = [
  "ansi_term",
  "clap",
