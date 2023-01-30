@@ -2,7 +2,7 @@
 name = "ego"
 version = "1.1.6"
 edition = "2021"
-rust-version = "1.60.0"
+rust-version = "1.64.0"
 
 # Metadata
 authors = ["Marti Raudsepp <marti@juffo.org>"]
@@ -19,7 +19,7 @@ categories = ["command-line-utilities"]
 users = "0.11.0"
 simple-error = "0.2.3"
 posix-acl = "1.1.0"
-clap = "~4.0.32"
+clap = "~4.1.4"
 log = { version = "0.4.17", features = ["std"] }
 ansi_term = "0.12.1"
 shell-words = "1.1.0"
@@ -28,5 +28,5 @@ shell-words = "1.1.0"
 default = []
 
 [dev-dependencies]
-clap_complete = "~4.0.7"
+clap_complete = "~4.1.1"
 snapbox = "0.4.4"

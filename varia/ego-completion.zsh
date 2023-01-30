@@ -22,8 +22,8 @@ _ego() {
 '--machinectl-bare[Use '\''machinectl'\'' but skip xdg-desktop-portal setup]' \
 '*-v[Verbose output. Use multiple times for more output.]' \
 '*--verbose[Verbose output. Use multiple times for more output.]' \
-'-h[Print help information]' \
-'--help[Print help information]' \
+'-h[Print help]' \
+'--help[Print help]' \
 '*::command -- Command name and arguments to run (default\: user shell):_cmdambivalent' \
 && ret=0
 }
