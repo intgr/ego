@@ -11,4 +11,4 @@ Options:
       --machinectl       Use 'machinectl' to change user (default, if available)
       --machinectl-bare  Use 'machinectl' but skip xdg-desktop-portal setup
   -v, --verbose...       Verbose output. Use multiple times for more output.
-  -h, --help             Print help information
+  -h, --help             Print help
