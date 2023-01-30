@@ -117,15 +117,14 @@ fn get_target_user(username: &str) -> Result<User, ErrorWithHint> {
     for uid in 150..=499 {
         if get_user_by_uid(uid).is_none() {
             hint = format!(
-                "{} with the command:\n    sudo useradd '{}' --uid {} --create-home",
-                hint, username, uid
+                "{hint} with the command:\n    sudo useradd '{username}' --uid {uid} --create-home"
             );
             break;
         }
     }
 
     Err(ErrorWithHint::new(
-        format!("Unknown user '{}'", username),
+        format!("Unknown user '{username}'"),
         hint,
     ))
 }
@@ -368,7 +367,7 @@ fn run_machinectl_command(
 ) -> Result<(), AnyErr> {
     let mut args = vec!["shell".to_string()];
     args.push(format!("--uid={}", ctx.target_user));
-    args.extend(envvars.iter().map(|v| format!("-E{}", v)));
+    args.extend(envvars.iter().map(|v| format!("-E{v}")));
     args.push("--".to_string());
     args.push(".host".to_string());
 
