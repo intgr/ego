@@ -1,5 +1,5 @@
 _ego() {
-    local i cur prev opts cmds
+    local i cur prev opts cmd
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
@@ -8,8 +8,8 @@ _ego() {
 
     for i in ${COMP_WORDS[@]}
     do
-        case "${i}" in
-            "$1")
+        case "${cmd},${i}" in
+            ",$1")
                 cmd="ego"
                 ;;
             *)
@@ -19,7 +19,7 @@ _ego() {
 
     case "${cmd}" in
         ego)
-            opts="-h -u -v --help --user --sudo --machinectl --machinectl-bare --verbose <command>..."
+            opts="-u -v -h --user --sudo --machinectl --machinectl-bare --verbose --help [command]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

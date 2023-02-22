@@ -17,13 +17,13 @@ _ego() {
     _arguments "${_arguments_options[@]}" \
 '-u+[Specify a username (default: ego)]:USER:_users' \
 '--user=[Specify a username (default: ego)]:USER:_users' \
-'-h[Print help information]' \
-'--help[Print help information]' \
 '--sudo[Use '\''sudo'\'' to change user]' \
 '--machinectl[Use '\''machinectl'\'' to change user (default, if available)]' \
 '--machinectl-bare[Use '\''machinectl'\'' but skip xdg-desktop-portal setup]' \
 '*-v[Verbose output. Use multiple times for more output.]' \
 '*--verbose[Verbose output. Use multiple times for more output.]' \
+'-h[Print help]' \
+'--help[Print help]' \
 '*::command -- Command name and arguments to run (default\: user shell):_cmdambivalent' \
 && ret=0
 }

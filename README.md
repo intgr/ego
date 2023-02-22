@@ -81,6 +81,16 @@ For sudo, add the following to `/etc/sudoers` (replace `<myname>` with your own 
 Changelog
 ---------
 
+##### UNRELEASED
+* Updated to clap 4.1.x (#116)
+* Minimum Supported Rust Version (MSRV) is now 1.64.0 (#116)
+
+##### 1.1.6 (2023-01-21)
+* Updated to clap 4.0.x (#101) and many other dependency updates
+* Fixes for new clippy lints (#95, #93, #111)
+* Use `snapbox` instead of hand-coded snapshot testing (#102)
+* Minimum Supported Rust Version (MSRV) was determined to be 1.60.0 (#113)
+
 ##### 1.1.5 (2022-01-02)
 * Document xhost requirement, improve xhost error reporting (#76)
 * Upgrade to clap 3.0.0 stable (#71)

@@ -1,5 +1,22 @@
 {
   "extends": [
     "config:base"
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 5am on saturday"]
+  },
+  "packageRules": [
+    {
+      "matchManagers": ["cargo"],
+      "matchPackageNames": ["clap", "clap_complete"],
+      "groupName": "Clap updates"
+    },
+    {
+      "matchManagers": ["cargo"],
+      "matchUpdateTypes": ["patch"],
+      "groupName": "Cargo patch",
+      "schedule": ["before 5am on saturday"]
+    }
   ]
 }
