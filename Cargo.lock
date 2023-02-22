@@ -225,8 +225,7 @@ checksum = "420acb44afdae038210c99e69aae24109f32f15500aa708e81d46c9f29d55fcf"
 [[package]]
 name = "simple-error"
 version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc47a29ce97772ca5c927f75bac34866b16d64e07f330c3248e2d7226623901b"
+source = "git+https://github.com/WiSaGaN/simple-error#1920434e45163774a4e24909a7b9abb209afe123"
 
 [[package]]
 name = "snapbox"

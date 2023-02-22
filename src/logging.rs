@@ -48,5 +48,5 @@ pub fn init_with_level(level: Level) {
     log::set_boxed_logger(Box::new(logger)).expect("Set logger failed");
     log::set_max_level(level.to_level_filter());
 
-    trace!("Log level {}", level);
+    trace!("Log level {level}");
 }

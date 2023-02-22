@@ -45,18 +45,18 @@ fn main_inner() -> Result<(), AnyErr> {
 
     let ret = prepare_runtime_dir(&ctx);
     if let Err(msg) = ret {
-        bail!("Error preparing runtime dir: {}", msg);
+        bail!("Error preparing runtime dir: {msg}");
     }
     match prepare_wayland(&ctx) {
-        Err(msg) => bail!("Error preparing Wayland: {}", msg),
+        Err(msg) => bail!("Error preparing Wayland: {msg}"),
         Ok(ret) => vars.extend(ret),
     }
     match prepare_x11(&ctx) {
-        Err(msg) => bail!("Error preparing X11: {}", msg),
+        Err(msg) => bail!("Error preparing X11: {msg}"),
         Ok(ret) => vars.extend(ret),
     }
     match prepare_pulseaudio(&ctx) {
-        Err(msg) => bail!("Error preparing PulseAudio: {}", msg),
+        Err(msg) => bail!("Error preparing PulseAudio: {msg}"),
         Ok(ret) => vars.extend(ret),
     }
 
@@ -67,7 +67,7 @@ fn main_inner() -> Result<(), AnyErr> {
         Method::MachinectlBare => run_machinectl_command(&ctx, vars, args.command, true),
     };
     if let Err(msg) = ret {
-        bail!("{}", msg);
+        bail!("{msg}");
     }
 
     Ok(())
@@ -88,7 +88,7 @@ fn getenv_optional(key: &str) -> Result<Option<String>, SimpleError> {
         Ok(val) => Ok(Some(val)),
         Err(VarError::NotPresent) => Ok(None),
         // We could use Path type for non-Unicode paths, but it's not worth it. Fix your s*#t!
-        Err(VarError::NotUnicode(_)) => bail!("Env variable {} invalid", key),
+        Err(VarError::NotUnicode(_)) => bail!("Env variable {key} invalid"),
     }
 }
 
@@ -96,7 +96,7 @@ fn getenv_optional(key: &str) -> Result<Option<String>, SimpleError> {
 fn getenv_path(key: &str) -> Result<PathBuf, SimpleError> {
     match getenv_optional(key)? {
         Some(val) => Ok(PathBuf::from(val)),
-        None => bail!("Env variable {} unset", key),
+        None => bail!("Env variable {key} unset"),
     }
 }
 
@@ -223,7 +223,7 @@ fn prepare_pulseaudio_socket(dir: &Path) -> Result<Vec<String>, AnyErr> {
     let path = dir.join("native");
     let meta = path.metadata();
     if let Err(msg) = meta {
-        bail!("'{}': {}", path.display(), msg);
+        bail!("'{}': {msg}", path.display());
     }
     let mode = meta.unwrap().permissions().mode();
     const WORLD_READ_PERMS: u32 = 0o006;
