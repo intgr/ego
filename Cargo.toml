@@ -17,7 +17,7 @@ categories = ["command-line-utilities"]
 
 [dependencies]
 users = "0.11.0"
-simple-error = "0.2.3"
+simple-error = "0.3.0"
 posix-acl = "1.1.0"
 clap = "~4.1.4"
 log = { version = "0.4.17", features = ["std"] }
