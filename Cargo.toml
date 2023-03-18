@@ -28,5 +28,5 @@ shell-words = "1.1.0"
 default = []
 
 [dev-dependencies]
-clap_complete = "~4.1.1"
+clap_complete = "~4.1.5"
 snapbox = "0.4.4"

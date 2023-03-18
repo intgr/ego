@@ -34,4 +34,8 @@ _ego_commands() {
     _describe -t commands 'ego commands' commands "$@"
 }
 
-_ego "$@"
+if [ "$funcstack[1]" = "_ego" ]; then
+    _ego "$@"
+else
+    compdef _ego ego
+fi
