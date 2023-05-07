@@ -1,5 +1,6 @@
 # This Dockerfile is mostly for CI, see .github/workflows/tests.yml
-FROM rust AS ego-build
+# Using Debian 'bullseye' as base, it has older glibc that's likely to be compatible with recent desktop distributions.
+FROM rust:bullseye AS ego-build
 
 WORKDIR /root/build
 # Make warnings fatal
@@ -19,4 +20,6 @@ RUN mkdir src/ && \
 
 # Do the actual build
 COPY . .
-RUN cargo build --bins --tests --color=always
+RUN cargo build --tests --color=always
+# Release build for publishing binaries
+RUN cargo build --release --bins --color=always && strip target/release/ego
