@@ -29,4 +29,4 @@ default = []
 
 [dev-dependencies]
 clap_complete = "~4.1.5"
-snapbox = "0.4.10"
+snapbox = "0.4.11"
