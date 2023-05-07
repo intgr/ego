@@ -15,8 +15,8 @@ _ego() {
 
     local context curcontext="$curcontext" state line
     _arguments "${_arguments_options[@]}" \
-'-u+[Specify a username (default: ego)]:USER:_users' \
-'--user=[Specify a username (default: ego)]:USER:_users' \
+'-u+[Specify a username (default\: ego)]:USER:_users' \
+'--user=[Specify a username (default\: ego)]:USER:_users' \
 '--sudo[Use '\''sudo'\'' to change user]' \
 '--machinectl[Use '\''machinectl'\'' to change user (default, if available)]' \
 '--machinectl-bare[Use '\''machinectl'\'' but skip xdg-desktop-portal setup]' \
