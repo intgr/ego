@@ -19,7 +19,7 @@ categories = ["command-line-utilities"]
 users = "0.11.0"
 simple-error = "0.3.0"
 posix-acl = "1.1.0"
-clap = "~4.2.7"
+clap = "~4.3.8"
 log = { version = "0.4.17", features = ["std"] }
 ansi_term = "0.12.1"
 shell-words = "1.1.0"
@@ -28,5 +28,5 @@ shell-words = "1.1.0"
 default = []
 
 [dev-dependencies]
-clap_complete = "~4.2.1"
+clap_complete = "~4.3.1"
 snapbox = "0.4.11"
