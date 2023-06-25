@@ -1,12 +1,17 @@
 //! Logging for command line output.
 //! Adapted from simple_logger by Sam Clements: https://github.com/borntyping/rust-simple_logger
 
-use ansi_term::Colour::{Purple, Red, Yellow};
+use crate::util::paint;
+use anstyle::{AnsiColor, Color, Style};
 use log::{trace, Level, Log, Metadata, Record};
 
 struct SimpleLogger {
     level: Level,
 }
+
+const COLOR_TRACE: Style = Style::new().fg_color(Some(Color::Ansi(AnsiColor::Magenta)));
+const COLOR_WARN: Style = Style::new().fg_color(Some(Color::Ansi(AnsiColor::Yellow)));
+const COLOR_ERROR: Style = Style::new().fg_color(Some(Color::Ansi(AnsiColor::Red)));
 
 impl Log for SimpleLogger {
     fn enabled(&self, metadata: &Metadata) -> bool {
@@ -24,13 +29,13 @@ impl Log for SimpleLogger {
                 } else {
                     record.target()
                 };
-                println!("[{}] {}", Purple.paint(target), record.args());
+                println!("[{}] {}", paint(COLOR_TRACE, target), record.args());
             }
             Level::Warn => {
-                println!("{}: {}", Yellow.paint("warning"), record.args());
+                println!("{}: {}", paint(COLOR_WARN, "warning"), record.args());
             }
             Level::Error => {
-                println!("{}: {}", Red.paint("error"), record.args());
+                println!("{}: {}", paint(COLOR_ERROR, "error"), record.args());
             }
             _ => {
                 println!("{}", record.args());

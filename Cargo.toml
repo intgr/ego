@@ -20,9 +20,9 @@ simple-error = "0.3.0"
 posix-acl = "1.1.0"
 clap = "~4.3.8"
 log = { version = "0.4.19", features = ["std"] }
-ansi_term = "0.12.1"
 shell-words = "1.1.0"
 nix = { version = "0.26.2", default-features = false, features = ["user"] }
+anstyle = "1.0.1"
 
 [features]
 default = []

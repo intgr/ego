@@ -1,12 +1,15 @@
 //! Error handling helpers and the `ErrorWithHint` type for more verbose error messages.
 
-use ansi_term::Colour::Green;
+use crate::util::paint;
+use anstyle::{AnsiColor, Color, Style};
 use log::error;
 use std::error::Error;
 use std::fmt;
 
 /// Shorter alias for `Box<dyn Error>`
 pub type AnyErr = Box<dyn Error>;
+
+const COLOR_HINT: Style = Style::new().fg_color(Some(Color::Ansi(AnsiColor::Green)));
 
 /// Advanced error type that can supply hints to the user
 #[derive(Debug)]
@@ -29,7 +32,7 @@ impl fmt::Display for ErrorWithHint {
         self.err.fmt(f)?;
 
         if !self.hint.is_empty() {
-            write!(f, "\n{}: {}", Green.paint("hint"), self.hint)?;
+            write!(f, "\n{}: {}", paint(COLOR_HINT, "error"), self.hint)?;
         }
         Ok(())
     }
