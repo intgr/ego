@@ -16,10 +16,12 @@ The following files are helpful for distribution packagers, so ego can work seam
 Distro packages should auto-create the `ego` user with low UID (<1000) and home `/home/ego`.
 And a separate group `ego-users` for users that are allowed to invoke commands as `ego`.
 
-The `ego.sysusers` drop-in file should create them on distros that support sysusers.d.
-The sudoers and polkit rules files then permit switching users.
+The `ego.sysusers.conf` and `ego.tmpfiles.conf` drop-in files should create them on distros that
+The `ego.sysusers.conf` and `ego.tmpfiles.conf` drop-in files should create them on distros that
+support sysusers.d and tmpfiles.d. The sudoers and polkit rules files then permit switching users.
 
 * `ego.sysusers.conf` → `/usr/lib/sysusers.d/ego.conf`
+* `ego.tmpfiles.conf` → `/usr/lib/tmpfiles.d/ego.conf`
 * `ego.sudoers` → `/etc/sudoers.d/50_ego`
 * `ego.rules` → `/usr/share/polkit-1/rules.d/50-ego.rules`
 
