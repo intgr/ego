@@ -30,3 +30,4 @@ default = []
 [dev-dependencies]
 clap_complete = "~4.3.1"
 snapbox = "0.4.11"
+testing_logger = "0.1.1"

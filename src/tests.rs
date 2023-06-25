@@ -1,17 +1,29 @@
 use std::env;
-use std::path::PathBuf;
+use std::fmt::Write;
+use std::path::{Path, PathBuf};
 
 use clap_complete::shells::{Bash, Fish, Zsh};
 use clap_complete::Generator;
-use log::Level;
+use log::{info, Level};
 
 use crate::cli::{build_cli, parse_args, Method};
 use crate::util::have_command;
-use crate::{get_wayland_socket, EgoContext};
+use crate::{check_user_homedir, get_wayland_socket, EgoContext};
 
 /// `vec![]` constructor that converts arguments to String
 macro_rules! string_vec {
     ($($x:expr),*) => (vec![$($x.to_string()),*] as Vec<String>);
+}
+
+/// Compare log output with snapshot file. Call `testing_logger::setup()` at beginning of test.
+fn assert_log_snapshot(expected_path: impl AsRef<Path>) {
+    testing_logger::validate(|logs| {
+        let output = logs.iter().fold(String::new(), |mut a, b| {
+            write!(a, "{}: {}\n", b.level.as_str(), b.body).unwrap();
+            a
+        });
+        snapbox::assert_eq_path(&expected_path, output);
+    })
 }
 
 fn render_completion(generator: impl Generator) -> Vec<u8> {
@@ -60,6 +72,7 @@ fn test_context() -> EgoContext {
         target_user: "ego".into(),
         target_uid: 155,
         target_user_shell: "/bin/bash".into(),
+        target_user_homedir: "/home/ego".into(),
     }
 }
 
@@ -129,4 +142,42 @@ fn test_cli_help() {
 fn test_have_command() {
     assert!(have_command("sh"));
     assert!(!have_command("what-is-this-i-don't-even"));
+}
+
+#[test]
+fn test_check_user_homedir() {
+    let ctx = EgoContext {
+        runtime_dir: Default::default(),
+        target_user: "root".to_string(),
+        target_uid: 0,
+        target_user_shell: Default::default(),
+        target_user_homedir: "/root".into(),
+    };
+
+    // Capture log output from called functions
+    testing_logger::setup();
+
+    info!("TEST: Success (no output)");
+    check_user_homedir(&ctx);
+
+    info!("TEST: Home does not exist");
+    check_user_homedir(&EgoContext {
+        target_user: "nope".into(),
+        target_user_homedir: "/tmp/path-does-not-exist.example".into(),
+        ..ctx.clone()
+    });
+
+    info!("TEST: Permission denied");
+    check_user_homedir(&EgoContext {
+        target_user_homedir: "/root/path-is-not-accessible.example".into(),
+        ..ctx.clone()
+    });
+
+    info!("TEST: Wrong owner");
+    check_user_homedir(&EgoContext {
+        target_uid: 1234,
+        ..ctx.clone()
+    });
+
+    assert_log_snapshot("src/snapshots/check_user_homedir.txt");
 }
