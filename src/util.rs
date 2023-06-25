@@ -1,7 +1,7 @@
 use crate::ErrorWithHint;
-use anstyle::{Style};
+use anstyle::Style;
 use log::debug;
-use std::fmt::{Display};
+use std::fmt::Display;
 use std::io::ErrorKind;
 use std::os::unix::prelude::CommandExt;
 use std::path::Path;
