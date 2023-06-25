@@ -4,8 +4,7 @@ on:
   schedule:
     # 16:21 UTC on Wednesdays
     - cron: "21 16 * * WED"
-  repository_dispatch:
-    types: [audit]
+  workflow_dispatch:
 
 jobs:
   audit:
