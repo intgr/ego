@@ -1,10 +1,17 @@
 use crate::ErrorWithHint;
+use anstyle::Style;
 use log::debug;
+use std::fmt::Display;
 use std::io::ErrorKind;
 use std::os::unix::prelude::CommandExt;
 use std::path::Path;
 use std::process::{Command, Output};
 use std::{env, io};
+
+/// Paint string `content` with ANSI colors `style` for printing to console.
+pub fn paint(style: Style, content: impl Display) -> String {
+    format!("{}{}{}", style.render(), content, style.render_reset())
+}
 
 /// Detect if system was booted with systemd init system. Same logic as sd_booted() in libsystemd.
 /// https://www.freedesktop.org/software/systemd/man/sd_booted.html
