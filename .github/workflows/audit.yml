@@ -1,0 +1,17 @@
+# Doc: https://github.com/actions-rs/audit-check#scheduled-audit
+name: Cargo packages audit
+on:
+  schedule:
+    # 16:21 UTC on Wednesdays
+    - cron: "21 16 * * WED"
+  repository_dispatch:
+    types: [audit]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/audit-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
