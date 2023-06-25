@@ -5,6 +5,8 @@ use crate::cli::{parse_args, Method};
 use crate::errors::{print_error, AnyErr, ErrorWithHint};
 use crate::util::{exec_command, have_command, run_command, sd_booted};
 use log::{debug, info, warn};
+use nix::libc::uid_t;
+use nix::unistd::{Uid, User};
 use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
 use simple_error::SimpleError;
 use std::env::VarError;
@@ -14,8 +16,6 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::exit;
 use std::{env, fs};
-use users::os::unix::UserExt;
-use users::{get_user_by_name, get_user_by_uid, uid_t, User};
 
 mod cli;
 mod errors;
@@ -101,8 +101,8 @@ fn getenv_path(key: &str) -> Result<PathBuf, SimpleError> {
 }
 
 /// Get details of *target* user; on error, formats a nice user-friendly message with instructions.
-fn get_target_user(username: &str) -> Result<User, ErrorWithHint> {
-    if let Some(user) = get_user_by_name(&username) {
+fn get_target_user(username: &str) -> Result<User, AnyErr> {
+    if let Some(user) = User::from_name(&username)? {
         return Ok(user);
     }
 
@@ -115,7 +115,7 @@ fn get_target_user(username: &str) -> Result<User, ErrorWithHint> {
     // > The system User IDs from 100 to 499 should be reserved for dynamic allocation by system
     // > administrators and post install scripts using useradd.
     for uid in 150..=499 {
-        if get_user_by_uid(uid).is_none() {
+        if User::from_uid(Uid::from_raw(uid))?.is_none() {
             hint = format!(
                 "{hint} with the command:\n    sudo useradd '{username}' --uid {uid} --create-home"
             );
@@ -123,10 +123,7 @@ fn get_target_user(username: &str) -> Result<User, ErrorWithHint> {
         }
     }
 
-    Err(ErrorWithHint::new(
-        format!("Unknown user '{username}'"),
-        hint,
-    ))
+    Err(ErrorWithHint::new(format!("Unknown user '{username}'"), hint).into())
 }
 
 fn create_context(username: String) -> Result<EgoContext, AnyErr> {
@@ -134,9 +131,9 @@ fn create_context(username: String) -> Result<EgoContext, AnyErr> {
     let runtime_dir = getenv_path("XDG_RUNTIME_DIR")?;
     Ok(EgoContext {
         runtime_dir,
-        target_user: username,
-        target_uid: user.uid(),
-        target_user_shell: user.shell().into(),
+        target_user: user.name,
+        target_uid: user.uid.as_raw(),
+        target_user_shell: user.shell,
     })
 }
 
