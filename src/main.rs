@@ -102,7 +102,7 @@ fn getenv_path(key: &str) -> Result<PathBuf, SimpleError> {
 
 /// Get details of *target* user; on error, formats a nice user-friendly message with instructions.
 fn get_target_user(username: &str) -> Result<User, AnyErr> {
-    if let Some(user) = User::from_name(&username)? {
+    if let Some(user) = User::from_name(username)? {
         return Ok(user);
     }
 
