@@ -32,7 +32,7 @@ impl fmt::Display for ErrorWithHint {
         self.err.fmt(f)?;
 
         if !self.hint.is_empty() {
-            write!(f, "\n{}: {}", paint(COLOR_HINT, "error"), self.hint)?;
+            write!(f, "\n{}: {}", paint(COLOR_HINT, "hint"), self.hint)?;
         }
         Ok(())
     }
