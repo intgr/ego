@@ -10,7 +10,7 @@ use std::{env, io};
 
 /// Paint string `content` with ANSI colors `style` for printing to console.
 pub fn paint(style: Style, content: impl Display) -> String {
-    return format!("{}{}{}", style.render(), content, style.render_reset());
+    format!("{}{}{}", style.render(), content, style.render_reset())
 }
 
 /// Detect if system was booted with systemd init system. Same logic as sd_booted() in libsystemd.
