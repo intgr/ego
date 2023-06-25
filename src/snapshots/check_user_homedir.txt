@@ -1,0 +1,7 @@
+INFO: TEST: Success (no output)
+INFO: TEST: Home does not exist
+WARN: User nope home directory /tmp/path-does-not-exist.example is not accessible: No such file or directory (os error 2)
+INFO: TEST: Permission denied
+INFO: User root home directory /root/path-is-not-accessible.example is not accessible: Permission denied (os error 13)
+INFO: TEST: Wrong owner
+WARN: User root home directory /root has incorrect ownership (expected UID 1234, found 0)

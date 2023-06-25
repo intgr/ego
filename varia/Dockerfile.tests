@@ -8,7 +8,14 @@ ENV RUSTFLAGS="-D warnings"
 RUN apt-get update && \
     apt-get install -y libacl1-dev && \
     rm -rf /var/lib/apt/lists/*
+
+# Build as unprivileged user
+RUN useradd build --create-home
+WORKDIR /home/build
+USER build
+
 RUN rustup component add rustfmt clippy
+
 # Build Cargo dependencies for cache
 COPY Cargo.toml Cargo.lock ./
 RUN mkdir src/ && \

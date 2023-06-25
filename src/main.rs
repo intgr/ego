@@ -4,14 +4,16 @@ extern crate simple_error;
 use crate::cli::{parse_args, Method};
 use crate::errors::{print_error, AnyErr, ErrorWithHint};
 use crate::util::{exec_command, have_command, run_command, sd_booted};
-use log::{debug, info, warn};
+use log::{debug, info, log, warn, Level};
 use nix::libc::uid_t;
 use nix::unistd::{Uid, User};
 use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
 use simple_error::SimpleError;
 use std::env::VarError;
 use std::fs::DirBuilder;
+use std::io::ErrorKind::PermissionDenied;
 use std::os::unix::fs::DirBuilderExt;
+use std::os::unix::fs::MetadataExt;
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::exit;
@@ -24,11 +26,13 @@ mod logging;
 mod tests;
 mod util;
 
+#[derive(Clone)]
 struct EgoContext {
     runtime_dir: PathBuf,
     target_user: String,
     target_uid: uid_t,
     target_user_shell: PathBuf,
+    target_user_homedir: PathBuf,
 }
 
 fn main_inner() -> Result<(), AnyErr> {
@@ -42,6 +46,8 @@ fn main_inner() -> Result<(), AnyErr> {
         "Setting up Alter Ego for target user {} ({})",
         ctx.target_user, ctx.target_uid
     );
+
+    check_user_homedir(&ctx);
 
     let ret = prepare_runtime_dir(&ctx);
     if let Err(msg) = ret {
@@ -144,6 +150,7 @@ fn create_context(username: String) -> Result<EgoContext, AnyErr> {
         target_user: user.name,
         target_uid: user.uid.as_raw(),
         target_user_shell: user.shell,
+        target_user_homedir: user.dir,
     })
 }
 
@@ -152,6 +159,40 @@ fn add_file_acl(path: &Path, uid: u32, flags: u32) -> Result<(), AnyErr> {
     acl.set(Qualifier::User(uid), flags);
     acl.write_acl(path)?;
     Ok(())
+}
+
+/// Report warning if user home directory does not exist or has wrong ownership
+fn check_user_homedir(ctx: &EgoContext) {
+    let home = &ctx.target_user_homedir;
+    match fs::metadata(home) {
+        Ok(meta) => {
+            if meta.uid() != ctx.target_uid {
+                warn!(
+                    "User {} home directory {} has incorrect ownership (expected UID {}, found {})",
+                    ctx.target_user,
+                    home.display(),
+                    ctx.target_uid,
+                    meta.uid()
+                );
+            }
+        }
+        Err(err) => {
+            // Report PermissionDenied as `info` level, user home directory is probably in a parent
+            // directory we have no access to, avoid nagging.
+            let level = match err.kind() {
+                PermissionDenied => Level::Info,
+                _ => Level::Warn,
+            };
+
+            log!(
+                level,
+                "User {} home directory {} is not accessible: {}",
+                ctx.target_user,
+                home.display(),
+                err
+            );
+        }
+    }
 }
 
 /// Add execute perm to runtime dir, e.g. `/run/user/1000`
