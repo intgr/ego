@@ -18,7 +18,7 @@ And a separate group `ego-users` for users that are allowed to invoke commands a
 
 The `ego.sysusers.conf` and `ego.tmpfiles.conf` drop-in files should create them on distros that
 The `ego.sysusers.conf` and `ego.tmpfiles.conf` drop-in files should create them on distros that
-support sysusers.d. The sudoers and polkit rules files then permit switching users.
+support sysusers.d and tmpfiles.d. The sudoers and polkit rules files then permit switching users.
 
 * `ego.sysusers.conf` → `/usr/lib/sysusers.d/ego.conf`
 * `ego.tmpfiles.conf` → `/usr/lib/tmpfiles.d/ego.conf`
