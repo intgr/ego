@@ -39,7 +39,7 @@ fn main_inner() -> Result<(), AnyErr> {
     let ctx = create_context(args.user)?;
 
     info!(
-        "Setting up Alter Ego for user {} ({})",
+        "Setting up Alter Ego for target user {} ({})",
         ctx.target_user, ctx.target_uid
     );
 
@@ -102,9 +102,11 @@ fn getenv_path(key: &str) -> Result<PathBuf, SimpleError> {
 
 /// Get details of *target* user; on error, formats a nice user-friendly message with instructions.
 fn get_target_user(username: &str) -> Result<User, AnyErr> {
-    if let Some(user) = User::from_name(username)? {
+    if let Some(user) = User::from_name(&username)? {
         return Ok(user);
     }
+
+    debug!("Username '{username}' not found");
 
     let mut hint = "Specify different user with --user= or create a new user".to_string();
 
@@ -120,6 +122,8 @@ fn get_target_user(username: &str) -> Result<User, AnyErr> {
                 "{hint} with the command:\n    sudo useradd '{username}' --uid {uid} --create-home"
             );
             break;
+        } else {
+            debug!("User UID {uid} already exists");
         }
     }
 
@@ -128,6 +132,12 @@ fn get_target_user(username: &str) -> Result<User, AnyErr> {
 
 fn create_context(username: String) -> Result<EgoContext, AnyErr> {
     let user = get_target_user(&username)?;
+    debug!(
+        "Found user '{}' UID {} shell '{}'",
+        user.name,
+        user.uid,
+        user.shell.display()
+    );
     let runtime_dir = getenv_path("XDG_RUNTIME_DIR")?;
     Ok(EgoContext {
         runtime_dir,
