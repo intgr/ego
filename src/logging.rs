@@ -10,8 +10,12 @@ struct SimpleLogger {
 }
 
 const COLOR_TRACE: Style = Style::new().fg_color(Some(Color::Ansi(AnsiColor::Magenta)));
-const COLOR_WARN: Style = Style::new().fg_color(Some(Color::Ansi(AnsiColor::Yellow)));
-const COLOR_ERROR: Style = Style::new().fg_color(Some(Color::Ansi(AnsiColor::Red)));
+const COLOR_WARN: Style = Style::new()
+    .fg_color(Some(Color::Ansi(AnsiColor::Yellow)))
+    .bold();
+const COLOR_ERROR: Style = Style::new()
+    .fg_color(Some(Color::Ansi(AnsiColor::Red)))
+    .bold();
 
 impl Log for SimpleLogger {
     fn enabled(&self, metadata: &Metadata) -> bool {

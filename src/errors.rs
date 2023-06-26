@@ -9,7 +9,9 @@ use std::fmt;
 /// Shorter alias for `Box<dyn Error>`
 pub type AnyErr = Box<dyn Error>;
 
-const COLOR_HINT: Style = Style::new().fg_color(Some(Color::Ansi(AnsiColor::Green)));
+const COLOR_HINT: Style = Style::new()
+    .fg_color(Some(Color::Ansi(AnsiColor::Green)))
+    .bold();
 
 /// Advanced error type that can supply hints to the user
 #[derive(Debug)]
