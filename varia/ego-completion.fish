@@ -4,3 +4,4 @@ complete -c ego -l machinectl -d 'Use \'machinectl\' to change user (default, if
 complete -c ego -l machinectl-bare -d 'Use \'machinectl\' but skip xdg-desktop-portal setup'
 complete -c ego -s v -l verbose -d 'Verbose output. Use multiple times for more output.'
 complete -c ego -s h -l help -d 'Print help'
+complete -c ego -s V -l version -d 'Print version'

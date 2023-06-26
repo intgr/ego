@@ -1,4 +1,4 @@
-Alter Ego: run desktop applications under a different local user
+Alter Ego: run Linux desktop applications under a different local user
 
 Usage: ego [OPTIONS] [command]...
 
@@ -12,3 +12,4 @@ Options:
       --machinectl-bare  Use 'machinectl' but skip xdg-desktop-portal setup
   -v, --verbose...       Verbose output. Use multiple times for more output.
   -h, --help             Print help
+  -V, --version          Print version
