@@ -1,4 +1,4 @@
-use clap::{Arg, ArgAction, ArgGroup, Command, ValueHint};
+use clap::{command, Arg, ArgAction, ArgGroup, Command, ValueHint};
 use log::Level;
 use std::ffi::OsString;
 
@@ -18,9 +18,7 @@ pub struct Args {
 }
 
 pub fn build_cli() -> Command {
-    Command::new("ego")
-        .about("Alter Ego: run desktop applications under a different local user")
-        .disable_version_flag(true)
+    command!()
         .arg(
             Arg::new("user")
                 .short('u')

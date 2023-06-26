@@ -24,6 +24,8 @@ _ego() {
 '*--verbose[Verbose output. Use multiple times for more output.]' \
 '-h[Print help]' \
 '--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
 '*::command -- Command name and arguments to run (default\: user shell):_cmdambivalent' \
 && ret=0
 }
