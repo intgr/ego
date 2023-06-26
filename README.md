@@ -81,9 +81,11 @@ For sudo, add the following to `/etc/sudoers` (replace `<myname>` with your own 
 Changelog
 ---------
 
-##### UNRELEASED
-* Updated to clap 4.1.x (#116)
+##### 1.1.7 (2023-06-26)
+* Distro packaging: added tmpfiles.d conf to create missing ego user home directory (#134, fixed issue #131)
+* Ego now detects and warns when target user's home directory does not exist or has wrong ownership (#139)
 * Minimum Supported Rust Version (MSRV) is now 1.64.0 (#116)
+* Various minor cleanups, replaced unmaintained dependencies, dependency updates.
 
 ##### 1.1.6 (2023-01-21)
 * Updated to clap 4.0.x (#101) and many other dependency updates
