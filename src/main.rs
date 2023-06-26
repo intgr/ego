@@ -36,7 +36,7 @@ struct EgoContext {
 }
 
 fn main_inner() -> Result<(), AnyErr> {
-    let args = parse_args(Box::new(env::args()));
+    let args = parse_args(env::args());
     logging::init_with_level(args.log_level);
 
     let mut vars: Vec<String> = Vec::new();
