@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use clap_complete::shells::{Bash, Fish, Zsh};
 use clap_complete::Generator;
 use log::{info, Level};
+use snapbox::assert_eq_path;
 
 use crate::cli::{build_cli, parse_args, Method};
 use crate::util::have_command;
@@ -22,7 +23,7 @@ fn assert_log_snapshot(expected_path: impl AsRef<Path>) {
             write!(a, "{}: {}\n", b.level.as_str(), b.body).unwrap();
             a
         });
-        snapbox::assert_eq_path(&expected_path, output);
+        assert_eq_path(&expected_path, output);
     })
 }
 
@@ -51,19 +52,19 @@ fn render_completion(generator: impl Generator) -> Vec<u8> {
 /// ```
 #[test]
 fn shell_completion_zsh() {
-    snapbox::assert_eq_path("varia/ego-completion.zsh", render_completion(Zsh));
+    assert_eq_path("varia/ego-completion.zsh", render_completion(Zsh));
 }
 
 /// Run `SNAPSHOTS=overwrite cargo test` to update
 #[test]
 fn shell_completion_bash() {
-    snapbox::assert_eq_path("varia/ego-completion.bash", render_completion(Bash));
+    assert_eq_path("varia/ego-completion.bash", render_completion(Bash));
 }
 
 /// Run `SNAPSHOTS=overwrite cargo test` to update
 #[test]
 fn shell_completion_fish() {
-    snapbox::assert_eq_path("varia/ego-completion.fish", render_completion(Fish));
+    assert_eq_path("varia/ego-completion.fish", render_completion(Fish));
 }
 
 fn test_context() -> EgoContext {
@@ -132,7 +133,7 @@ fn test_parse_args() {
 
 #[test]
 fn test_cli_help() {
-    snapbox::assert_eq_path(
+    assert_eq_path(
         "src/snapshots/ego.help",
         build_cli().render_help().to_string(),
     );
