@@ -18,7 +18,7 @@ categories = ["command-line-utilities"]
 [dependencies]
 simple-error = "0.3.0"
 posix-acl = "1.1.0"
-clap = { version = "~4.3.8", features = ["cargo"] }
+clap = { version = "~4.4.6", features = ["cargo"] }
 log = { version = "0.4.19", features = ["std"] }
 shell-words = "1.1.0"
 nix = { version = "0.26.2", default-features = false, features = ["user"] }
@@ -28,6 +28,6 @@ anstyle = "1.0.1"
 default = []
 
 [dev-dependencies]
-clap_complete = "~4.3.1"
+clap_complete = "~4.4.3"
 snapbox = "0.4.11"
 testing_logger = "0.1.1"
