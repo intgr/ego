@@ -43,4 +43,4 @@ _ego() {
     esac
 }
 
-complete -F _ego -o bashdefault -o default ego
+complete -F _ego -o nosort -o bashdefault -o default ego
