@@ -2,7 +2,7 @@
 name = "ego"
 version = "1.1.7"
 edition = "2021"
-rust-version = "1.64.0"
+rust-version = "1.70.0"
 
 # Metadata
 authors = ["Marti Raudsepp <marti@juffo.org>"]
@@ -19,15 +19,15 @@ categories = ["command-line-utilities"]
 simple-error = "0.3.0"
 posix-acl = "1.1.0"
 clap = { version = "~4.4.6", features = ["cargo"] }
-log = { version = "0.4.19", features = ["std"] }
+log = { version = "0.4.20", features = ["std"] }
 shell-words = "1.1.0"
 nix = { version = "0.27.1", default-features = false, features = ["user"] }
-anstyle = "1.0.1"
+anstyle = "1.0.4"
 
 [features]
 default = []
 
 [dev-dependencies]
 clap_complete = "~4.4.3"
-snapbox = "0.4.11"
+snapbox = "0.4.14"
 testing_logger = "0.1.1"
