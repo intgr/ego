@@ -17,7 +17,7 @@ categories = ["command-line-utilities"]
 
 [dependencies]
 simple-error = "0.3.0"
-posix-acl = "1.1.0"
+posix-acl = "1.2.0"
 clap = { version = "~4.4.6", features = ["cargo"] }
 log = { version = "0.4.20", features = ["std"] }
 shell-words = "1.1.0"
