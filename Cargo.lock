@@ -160,9 +160,9 @@ checksum = "61807f77802ff30975e01f4f071c8ba10c022052f98b3294119f3e615d13e5be"
 
 [[package]]
 name = "posix-acl"
-version = "1.1.0"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00fa64c4974f6d78ef76bfa003f8d2457b01d24589a87dad854d28dc16598f51"
+checksum = "9928b761309e4a4ca4f2d90eb03029142e3f7164107e18db4d46516515b87441"
 dependencies = [
  "acl-sys",
  "libc",
