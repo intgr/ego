@@ -1,5 +1,5 @@
 //! Logging for command line output.
-//! Adapted from simple_logger by Sam Clements: https://github.com/borntyping/rust-simple_logger
+//! Adapted from `simple_logger` by Sam Clements: <https://github.com/borntyping/rust-simple_logger>
 
 use crate::util::paint;
 use anstyle::{AnsiColor, Color, Style};
@@ -50,7 +50,7 @@ impl Log for SimpleLogger {
     fn flush(&self) {}
 }
 
-/// Initializes the global logger with a SimpleLogger instance with
+/// Initializes the global logger with a `SimpleLogger` instance with
 /// `max_log_level` set to a specific log level.
 pub fn init_with_level(level: Level) {
     let logger = SimpleLogger { level };

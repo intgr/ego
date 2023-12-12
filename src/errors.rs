@@ -40,6 +40,6 @@ impl fmt::Display for ErrorWithHint {
     }
 }
 
-pub fn print_error(err: AnyErr) {
+pub fn print_error(err: &AnyErr) {
     error!("{err}");
 }
