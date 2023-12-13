@@ -1,3 +1,6 @@
+#![warn(clippy::pedantic)]
+#![allow(clippy::module_name_repetitions)]
+
 #[macro_use]
 extern crate simple_error;
 
@@ -40,7 +43,7 @@ fn main_inner() -> Result<(), AnyErr> {
     logging::init_with_level(args.log_level);
 
     let mut vars: Vec<String> = Vec::new();
-    let ctx = create_context(args.user)?;
+    let ctx = create_context(&args.user)?;
 
     info!(
         "Setting up Alter Ego for target user {} ({})",
@@ -69,8 +72,8 @@ fn main_inner() -> Result<(), AnyErr> {
     let method = args.method.unwrap_or_else(detect_method);
     let ret = match method {
         Method::Sudo => run_sudo_command(&ctx, vars, args.command),
-        Method::Machinectl => run_machinectl_command(&ctx, vars, args.command, false),
-        Method::MachinectlBare => run_machinectl_command(&ctx, vars, args.command, true),
+        Method::Machinectl => run_machinectl_command(&ctx, &vars, args.command, false),
+        Method::MachinectlBare => run_machinectl_command(&ctx, &vars, args.command, true),
     };
     if let Err(msg) = ret {
         bail!("{msg}");
@@ -82,7 +85,7 @@ fn main_inner() -> Result<(), AnyErr> {
 fn main() {
     let ret = main_inner();
     if let Err(err) = ret {
-        print_error(err);
+        print_error(&err);
         exit(1);
     }
 }
@@ -128,16 +131,15 @@ fn get_target_user(username: &str) -> Result<User, AnyErr> {
                 "{hint} with the command:\n    sudo useradd '{username}' --uid {uid} --create-home"
             );
             break;
-        } else {
-            debug!("User UID {uid} already exists");
         }
+        debug!("User UID {uid} already exists");
     }
 
     Err(ErrorWithHint::new(format!("Unknown user '{username}'"), hint).into())
 }
 
-fn create_context(username: String) -> Result<EgoContext, AnyErr> {
-    let user = get_target_user(&username)?;
+fn create_context(username: &str) -> Result<EgoContext, AnyErr> {
+    let user = get_target_user(username)?;
     debug!(
         "Found user '{}' UID {} shell '{}'",
         user.name,
@@ -206,8 +208,8 @@ fn prepare_runtime_dir(ctx: &EgoContext) -> Result<(), AnyErr> {
     Ok(())
 }
 
-/// WAYLAND_DISPLAY may be absolute path or relative to XDG_RUNTIME_DIR
-/// See https://manpages.debian.org/experimental/libwayland-doc/wl_display_connect.3.en.html
+/// `WAYLAND_DISPLAY` may be absolute path or relative to `XDG_RUNTIME_DIR`
+/// See <https://manpages.debian.org/experimental/libwayland-doc/wl_display_connect.3.en.html>
 fn get_wayland_socket(ctx: &EgoContext) -> Result<Option<PathBuf>, AnyErr> {
     match getenv_optional("WAYLAND_DISPLAY")? {
         None => Ok(None),
@@ -274,6 +276,8 @@ fn prepare_pulseaudio_socket(dir: &Path) -> Result<Vec<String>, AnyErr> {
         bail!("'{}': {msg}", path.display());
     }
     let mode = meta.unwrap().permissions().mode();
+
+    #[allow(clippy::items_after_statements)]
     const WORLD_READ_PERMS: u32 = 0o006;
     if mode & WORLD_READ_PERMS != WORLD_READ_PERMS {
         bail!(
@@ -374,7 +378,7 @@ fn run_sudo_command(
     // If SUDO_ASKPASS envvar is set, add -A argument to use the askpass agent
     if let Ok(Some(_)) = getenv_optional("SUDO_ASKPASS") {
         debug!("SUDO_ASKPASS detected");
-        args.push("-A".into())
+        args.push("-A".into());
     }
     args.extend(envvars);
     args.extend(remote_cmd);
@@ -385,7 +389,7 @@ fn run_sudo_command(
 }
 
 #[allow(clippy::format_push_string)]
-fn machinectl_remote_command(remote_cmd: Vec<String>, envvars: Vec<String>, bare: bool) -> String {
+fn machinectl_remote_command(remote_cmd: Vec<String>, envvars: &[String], bare: bool) -> String {
     let mut cmd = String::new();
 
     if !bare {
@@ -409,7 +413,7 @@ fn machinectl_remote_command(remote_cmd: Vec<String>, envvars: Vec<String>, bare
 
 fn run_machinectl_command(
     ctx: &EgoContext,
-    envvars: Vec<String>,
+    envvars: &[String],
     remote_cmd: Vec<String>,
     bare: bool,
 ) -> Result<(), AnyErr> {

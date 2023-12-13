@@ -10,24 +10,24 @@ use std::{env, io};
 
 /// Paint string `content` with ANSI colors `style` for printing to console.
 pub fn paint(style: Style, content: impl Display) -> String {
-    format!("{}{}{}", style.render(), content, style.render_reset())
+    format!("{}{content}{}", style.render(), style.render_reset())
 }
 
-/// Detect if system was booted with systemd init system. Same logic as sd_booted() in libsystemd.
-/// https://www.freedesktop.org/software/systemd/man/sd_booted.html
+/// Detect if system was booted with systemd init system. Same logic as `sd_booted()` in libsystemd.
+/// <https://www.freedesktop.org/software/systemd/man/sd_booted.html>
 pub fn sd_booted() -> bool {
     Path::new("/run/systemd/system").exists()
 }
 
-/// Test if a command is present in $PATH
-/// Adapted from https://stackoverflow.com/a/37499032/177663
+/// Test if a command is present in `$PATH`
+/// Adapted from <https://stackoverflow.com/a/37499032/177663>
 pub fn have_command<P: AsRef<Path>>(exe_name: P) -> bool {
     env::var_os("PATH").map_or(false, |paths| {
         env::split_paths(&paths).any(|dir| dir.join(&exe_name).is_file())
     })
 }
 
-fn report_command_error(err: io::Error, program: &str, args: &[String]) -> ErrorWithHint {
+fn report_command_error(err: &io::Error, program: &str, args: &[String]) -> ErrorWithHint {
     ErrorWithHint::new(
         format!("Failed to run {program}: {err}"),
         if err.kind() == ErrorKind::NotFound {
@@ -42,9 +42,9 @@ fn report_command_error(err: io::Error, program: &str, args: &[String]) -> Error
 pub fn exec_command(program: &str, args: &[String]) -> Result<(), ErrorWithHint> {
     debug!("Executing: {program} {}", shell_words::join(args));
     // If this call returns at all, it was an error
-    let err: io::Error = Command::new(program).args(args).exec();
+    let err = Command::new(program).args(args).exec();
 
-    Err(report_command_error(err, program, args))
+    Err(report_command_error(&err, program, args))
 }
 
 /// Run command as subprocess. Return output if status was 0, otherwise return as error.
@@ -53,7 +53,7 @@ pub fn run_command(program: &str, args: &[String]) -> Result<Output, ErrorWithHi
     let ret = Command::new(program)
         .args(args)
         .output()
-        .map_err(|err| report_command_error(err, program, args))?;
+        .map_err(|err| report_command_error(&err, program, args))?;
 
     if !ret.status.success() {
         return Err(ErrorWithHint::new(
