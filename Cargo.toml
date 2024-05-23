@@ -29,5 +29,5 @@ default = []
 
 [dev-dependencies]
 clap_complete = "~4.4.3"
-snapbox = "0.4.14"
+snapbox = "0.6.0"
 testing_logger = "0.1.1"
