@@ -43,4 +43,8 @@ _ego() {
     esac
 }
 
-complete -F _ego -o nosort -o bashdefault -o default ego
+if [[ "${BASH_VERSINFO[0]}" -eq 4 && "${BASH_VERSINFO[1]}" -ge 4 || "${BASH_VERSINFO[0]}" -gt 4 ]]; then
+    complete -F _ego -o nosort -o bashdefault -o default ego
+else
+    complete -F _ego -o bashdefault -o default ego
+fi
