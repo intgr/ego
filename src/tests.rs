@@ -1,11 +1,13 @@
 use std::env;
 use std::fmt::Write;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
+use std::sync::OnceLock;
 
 use clap_complete::shells::{Bash, Fish, Zsh};
 use clap_complete::Generator;
 use log::{info, Level};
-use snapbox::assert_eq_path;
+use snapbox::Assert;
+use snapbox::{file, Data};
 
 use crate::cli::{build_cli, parse_args, Method};
 use crate::util::have_command;
@@ -16,22 +18,27 @@ macro_rules! string_vec {
     ($($x:expr),*) => (vec![$($x.to_string()),*] as Vec<String>);
 }
 
+fn snapshot() -> &'static Assert {
+    static SNAPSHOT: OnceLock<Assert> = OnceLock::new();
+    SNAPSHOT.get_or_init(|| Assert::new().action_env("SNAPSHOTS"))
+}
+
 /// Compare log output with snapshot file. Call `testing_logger::setup()` at beginning of test.
-fn assert_log_snapshot(expected_path: impl AsRef<Path>) {
+fn assert_log_snapshot(expected_path: &Data) {
     testing_logger::validate(|logs| {
         let output = logs.iter().fold(String::new(), |mut a, b| {
             write!(a, "{}: {}\n", b.level.as_str(), b.body).unwrap();
             a
         });
-        assert_eq_path(&expected_path, output);
+        snapshot().eq(output, expected_path);
     })
 }
 
-fn render_completion(generator: impl Generator) -> Vec<u8> {
+fn render_completion(generator: impl Generator) -> Data {
     let mut buf = Vec::<u8>::new();
     let mut app = build_cli();
     clap_complete::generate(generator, &mut app, "ego", &mut buf);
-    buf
+    buf.into()
 }
 
 /// Unit tests may seem like a weird place to update shell completion files, but snapshot testing
@@ -47,19 +54,28 @@ fn render_completion(generator: impl Generator) -> Vec<u8> {
 /// ```
 #[test]
 fn shell_completion_zsh() {
-    assert_eq_path("varia/ego-completion.zsh", render_completion(Zsh));
+    snapshot().eq(
+        render_completion(Zsh),
+        file!["../varia/ego-completion.zsh"].raw(),
+    );
 }
 
 /// Run `SNAPSHOTS=overwrite cargo test` to update
 #[test]
 fn shell_completion_bash() {
-    assert_eq_path("varia/ego-completion.bash", render_completion(Bash));
+    snapshot().eq(
+        render_completion(Bash),
+        file!["../varia/ego-completion.bash"],
+    );
 }
 
 /// Run `SNAPSHOTS=overwrite cargo test` to update
 #[test]
 fn shell_completion_fish() {
-    assert_eq_path("varia/ego-completion.fish", render_completion(Fish));
+    snapshot().eq(
+        render_completion(Fish),
+        file!["../varia/ego-completion.fish"].raw(),
+    );
 }
 
 fn test_context() -> EgoContext {
@@ -128,9 +144,9 @@ fn test_parse_args() {
 
 #[test]
 fn test_cli_help() {
-    assert_eq_path(
-        "src/snapshots/ego.help",
+    snapshot().eq(
         build_cli().render_help().to_string(),
+        file!["snapshots/ego.help"],
     );
 }
 
@@ -175,5 +191,5 @@ fn test_check_user_homedir() {
         ..ctx.clone()
     });
 
-    assert_log_snapshot("src/snapshots/check_user_homedir.txt");
+    assert_log_snapshot(&file!["snapshots/check_user_homedir.txt"]);
 }
