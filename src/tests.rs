@@ -49,7 +49,7 @@ fn render_completion(generator: impl Generator) -> Data {
 ///
 /// Run `SNAPSHOTS=overwrite cargo test` to update
 ///
-/// Usage with zsh:k
+/// Usage with zsh:
 /// ```
 /// cp varia/ego-completion.zsh /usr/local/share/zsh/site-functions/_ego
 /// ```
