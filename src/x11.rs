@@ -4,7 +4,10 @@ use std::os::raw::{c_char, c_int};
 use std::ptr::null_mut;
 
 use x11::xlib;
-use x11::xlib::{FamilyServerInterpreted, XAddHost, XCloseDisplay, XHostAddress, XOpenDisplay};
+use x11::xlib::{
+    FamilyServerInterpreted, XAddHost, XCloseDisplay, XHostAddress, XOpenDisplay,
+    XServerInterpretedAddress,
+};
 
 /// Based on code by Vadzim Dambrouski from:
 /// <https://github.com/pftbest/x11-rust-example/blob/master/src/lib.rs>
@@ -26,16 +29,6 @@ impl Drop for Display {
     fn drop(&mut self) {
         unsafe { XCloseDisplay(self.raw) };
     }
-}
-
-/// <https://www.x.org/releases/X11R7.5/doc/man/man3/XAddHost.3.html#sect4>
-/// Submitted to upstream: <https://github.com/AltF02/x11-rs/pull/152>
-#[repr(C)]
-pub struct XServerInterpretedAddress {
-    pub typelength: c_int,
-    pub valuelength: c_int,
-    pub type_: *mut c_char,
-    pub value: *mut c_char,
 }
 
 #[allow(clippy::cast_possible_truncation)]
