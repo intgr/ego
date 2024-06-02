@@ -28,11 +28,11 @@ fn snapshot() -> &'static Assert {
 fn assert_log_snapshot(expected_path: &Data) {
     testing_logger::validate(|logs| {
         let output = logs.iter().fold(String::new(), |mut a, b| {
-            write!(a, "{}: {}\n", b.level.as_str(), b.body).unwrap();
+            writeln!(a, "{}: {}", b.level.as_str(), b.body).unwrap();
             a
         });
         snapshot().eq(output, expected_path);
-    })
+    });
 }
 
 fn render_completion(generator: impl Generator) -> Data {
