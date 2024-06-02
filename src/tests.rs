@@ -113,7 +113,10 @@ fn test_x11_error() {
     env::remove_var("DISPLAY");
 
     let err = x11_add_acl("test", "test").unwrap_err();
-    assert_eq!(format!("{err}"), "Could not open X11 display");
+    assert_eq!(
+        err.to_string(),
+        "Connection closed, error during parsing display string"
+    );
 }
 
 #[test]

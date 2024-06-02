@@ -1,65 +1,23 @@
-use simple_error::SimpleError;
-use std::mem;
-use std::os::raw::{c_char, c_int};
-use std::ptr::null_mut;
+use log::debug;
+use xcb::x::{ChangeHosts, Family, HostMode};
+use xcb::Connection;
 
-use x11::xlib;
-use x11::xlib::{
-    FamilyServerInterpreted, XAddHost, XCloseDisplay, XHostAddress, XOpenDisplay,
-    XServerInterpretedAddress,
-};
-
-/// Based on code by Vadzim Dambrouski from:
-/// <https://github.com/pftbest/x11-rust-example/blob/master/src/lib.rs>
-pub struct Display {
-    raw: *mut xlib::Display,
-}
-
-impl Display {
-    pub fn open() -> Result<Self, SimpleError> {
-        let display = unsafe { XOpenDisplay(null_mut()) };
-        if display.is_null() {
-            bail!("Could not open X11 display");
-        }
-        Ok(Display { raw: display })
-    }
-}
-
-impl Drop for Display {
-    fn drop(&mut self) {
-        unsafe { XCloseDisplay(self.raw) };
-    }
-}
-
-#[allow(clippy::cast_possible_truncation)]
-#[allow(clippy::cast_possible_wrap)]
-pub fn new_siaddr(type_: &str, value: &str) -> XServerInterpretedAddress {
-    XServerInterpretedAddress {
-        typelength: type_.len() as c_int,
-        valuelength: value.len() as c_int,
-        type_: type_.as_ptr() as *mut c_char,
-        value: value.as_ptr() as *mut c_char,
-    }
-}
+use crate::errors::AnyErr;
 
 #[allow(clippy::cast_possible_wrap)]
 #[allow(clippy::cast_possible_truncation)]
 #[allow(clippy::ptr_as_ptr)]
-pub fn x11_add_acl(type_: &str, value: &str) -> Result<(), SimpleError> {
-    let display = Display::open()?;
+pub fn x11_add_acl(type_tag: &str, value: &str) -> Result<(), AnyErr> {
+    let (conn, _screen_num) = Connection::connect(None)?;
 
-    // Construct message
-    let mut siaddr = new_siaddr(type_, value);
-    let mut acl = XHostAddress {
-        family: FamilyServerInterpreted,
-        address: std::ptr::addr_of_mut!(siaddr) as *mut c_char,
-        length: mem::size_of::<XServerInterpretedAddress>() as c_int,
-    };
-    // Doc: https://www.x.org/releases/X11R7.5/doc/man/man3/XAddHost.3.html
-    let ret = unsafe { XAddHost(display.raw, &mut acl) };
-    // According to xhost code, return 1 is success
-    if ret != 1 {
-        bail!("XAddHost returned {}", ret);
-    }
+    debug!("X11: Adding XHost entry SI:{type_tag}:{value}");
+
+    let result = conn.send_and_check_request(&ChangeHosts {
+        mode: HostMode::Insert,
+        family: Family::ServerInterpreted,
+        address: format!("{type_tag}::\x00{value}").as_bytes(),
+    });
+    map_err_with!(result, "Error adding XHost entry")?;
+
     Ok(())
 }
