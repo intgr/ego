@@ -235,7 +235,8 @@ fn prepare_wayland(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
     Ok(vec![format!("WAYLAND_DISPLAY={}", path.to_str().unwrap())])
 }
 
-/// Detect `DISPLAY` and grant permissions via X11 protocol `ChangeHosts` command or `xhost`.
+/// Detect `DISPLAY` and grant permissions via X11 protocol `ChangeHosts` command
+/// (or run `xhost` command if `--old-xhost` was used).
 /// Return environment vars for `DISPLAY`
 fn prepare_x11(ctx: &EgoContext, old_xhost: bool) -> Result<Vec<String>, AnyErr> {
     let display = getenv_optional("DISPLAY")?;

@@ -32,7 +32,7 @@ Ego aims to come with sane defaults and be easy to set up.
 **Requirements:**
 * [Rust & cargo](https://www.rust-lang.org/tools/install)
 * `libacl.so` library (Debian/Ubuntu: libacl1-dev; Fedora: libacl-devel; Arch: acl)
-* `libX11.so` library (Debian/Ubuntu: libx11; Fedora: libX11; Arch: libx11)  # FIXME - devel?
+* `libxcb.so` library (Debian/Ubuntu: libxcb1-dev; Fedora: libxcb-devel; Arch: libxcb)
 
 **Recommended:** (Not needed when using `--sudo` mode, but some desktop functionality may not work).
 * `machinectl` command (Debian/Ubuntu/Fedora: systemd-container; Arch: systemd)
@@ -82,7 +82,7 @@ Changelog
 ---------
 
 ##### Unreleased
-* Use libX11 directly instead of executing `xhost` command (#89)
+* Use X11 protocol directly via `libxcb` instead of executing `xhost` command (#163)
 
 ##### 1.1.7 (2023-06-26)
 * Distro packaging: added tmpfiles.d conf to create missing ego user home directory (#134, fixed issue #131)
