@@ -15,7 +15,7 @@ pub fn x11_add_acl(type_tag: &str, value: &str) -> Result<(), AnyErr> {
     let result = conn.send_and_check_request(&ChangeHosts {
         mode: HostMode::Insert,
         family: Family::ServerInterpreted,
-        address: format!("{type_tag}::\x00{value}").as_bytes(),
+        address: format!("{type_tag}\x00{value}").as_bytes(),
     });
     map_err_with!(result, "Error adding XHost entry")?;
 
