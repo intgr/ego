@@ -20,6 +20,7 @@ _ego() {
 '--sudo[Use '\''sudo'\'' to change user]' \
 '--machinectl[Use '\''machinectl'\'' to change user (default, if available)]' \
 '--machinectl-bare[Use '\''machinectl'\'' but skip xdg-desktop-portal setup]' \
+'--old-xhost[Execute '\''xhost'\'' command instead of connecting to X11 directly]' \
 '*-v[Verbose output. Use multiple times for more output.]' \
 '*--verbose[Verbose output. Use multiple times for more output.]' \
 '-h[Print help]' \

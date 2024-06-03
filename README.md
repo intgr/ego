@@ -10,7 +10,7 @@ ego (a.k.a Alter Ego)
 
 **Ego** is a tool to run Linux desktop applications under a different local user. Currently
 integrates with Wayland, Xorg, PulseAudio and xdg-desktop-portal. You may think of it as `xhost`
-for Wayland and PulseAudio. This is done using filesystem ACLs and `xhost` command.
+for Wayland and PulseAudio. This is done using filesystem ACLs and X11 host access control.
 
 Disclaimer: **DO NOT RUN UNTRUSTED PROGRAMS VIA EGO.** However, using ego is more secure than
 running applications directly under your primary user.
@@ -32,7 +32,7 @@ Ego aims to come with sane defaults and be easy to set up.
 **Requirements:**
 * [Rust & cargo](https://www.rust-lang.org/tools/install)
 * `libacl.so` library (Debian/Ubuntu: libacl1-dev; Fedora: libacl-devel; Arch: acl)
-* `xhost` binary (Debian/Ubuntu: x11-xserver-utils; Fedora: xorg-xhost; Arch: xorg-xhost)
+* `libxcb.so` library (Debian/Ubuntu: libxcb1-dev; Fedora: libxcb-devel; Arch: libxcb)
 
 **Recommended:** (Not needed when using `--sudo` mode, but some desktop functionality may not work).
 * `machinectl` command (Debian/Ubuntu/Fedora: systemd-container; Arch: systemd)
@@ -80,6 +80,9 @@ For sudo, add the following to `/etc/sudoers` (replace `<myname>` with your own 
 
 Changelog
 ---------
+
+##### Unreleased
+* Use X11 protocol directly via `libxcb`. The `xhost` dependency is no longer needed. (#163)
 
 ##### 1.1.7 (2023-06-26)
 * Distro packaging: added tmpfiles.d conf to create missing ego user home directory (#134, fixed issue #131)

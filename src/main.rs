@@ -7,6 +7,7 @@ extern crate simple_error;
 use crate::cli::{parse_args, Method};
 use crate::errors::{print_error, AnyErr, ErrorWithHint};
 use crate::util::{exec_command, have_command, run_command, sd_booted};
+use crate::x11::x11_add_acl;
 use log::{debug, info, log, warn, Level};
 use nix::libc::uid_t;
 use nix::unistd::{Uid, User};
@@ -28,6 +29,7 @@ mod logging;
 #[cfg(test)]
 mod tests;
 mod util;
+mod x11;
 
 #[derive(Clone)]
 struct EgoContext {
@@ -60,7 +62,7 @@ fn main_inner() -> Result<(), AnyErr> {
         Err(msg) => bail!("Error preparing Wayland: {msg}"),
         Ok(ret) => vars.extend(ret),
     }
-    match prepare_x11(&ctx) {
+    match prepare_x11(&ctx, args.old_xhost) {
         Err(msg) => bail!("Error preparing X11: {msg}"),
         Ok(ret) => vars.extend(ret),
     }
@@ -233,17 +235,23 @@ fn prepare_wayland(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
     Ok(vec![format!("WAYLAND_DISPLAY={}", path.to_str().unwrap())])
 }
 
-/// Detect `DISPLAY` and run `xhost` to grant permissions.
+/// Detect `DISPLAY` and grant permissions via X11 protocol `ChangeHosts` command
+/// (or run `xhost` command if `--old-xhost` was used).
 /// Return environment vars for `DISPLAY`
-fn prepare_x11(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
+fn prepare_x11(ctx: &EgoContext, old_xhost: bool) -> Result<Vec<String>, AnyErr> {
     let display = getenv_optional("DISPLAY")?;
     if display.is_none() {
         debug!("X11: DISPLAY not set, skipping");
         return Ok(vec![]);
     }
 
-    let grant = format!("+si:localuser:{}", ctx.target_user);
-    run_command("xhost", &[grant])?;
+    if old_xhost {
+        warn!("--old-xhost is deprecated. If there are issues with the new method, please report a bug.");
+        let grant = format!("+si:localuser:{}", ctx.target_user);
+        run_command("xhost", &[grant])?;
+    } else {
+        x11_add_acl("localuser", &ctx.target_user)?;
+    }
     // TODO should also test /tmp/.X11-unix/X0 permissions?
 
     Ok(vec![format!("DISPLAY={}", display.unwrap())])
