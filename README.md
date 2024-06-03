@@ -82,7 +82,7 @@ Changelog
 ---------
 
 ##### Unreleased
-* Use X11 protocol directly via `libxcb` instead of executing `xhost` command (#163)
+* Use X11 protocol directly via `libxcb`. The `xhost` dependency is no longer needed. (#163)
 
 ##### 1.1.7 (2023-06-26)
 * Distro packaging: added tmpfiles.d conf to create missing ego user home directory (#134, fixed issue #131)
