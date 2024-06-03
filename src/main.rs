@@ -235,7 +235,7 @@ fn prepare_wayland(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
     Ok(vec![format!("WAYLAND_DISPLAY={}", path.to_str().unwrap())])
 }
 
-/// Detect `DISPLAY` and run `xhost` to grant permissions.
+/// Detect `DISPLAY` and grant permissions via X11 protocol `ChangeHosts` command or `xhost`.
 /// Return environment vars for `DISPLAY`
 fn prepare_x11(ctx: &EgoContext, old_xhost: bool) -> Result<Vec<String>, AnyErr> {
     let display = getenv_optional("DISPLAY")?;
@@ -249,7 +249,7 @@ fn prepare_x11(ctx: &EgoContext, old_xhost: bool) -> Result<Vec<String>, AnyErr>
         let grant = format!("+si:localuser:{}", ctx.target_user);
         run_command("xhost", &[grant])?;
     } else {
-        x11_add_acl("localuser", ctx.target_user.as_str())?;
+        x11_add_acl("localuser", &ctx.target_user)?;
     }
     // TODO should also test /tmp/.X11-unix/X0 permissions?
 

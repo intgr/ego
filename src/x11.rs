@@ -4,9 +4,6 @@ use xcb::Connection;
 
 use crate::errors::AnyErr;
 
-#[allow(clippy::cast_possible_wrap)]
-#[allow(clippy::cast_possible_truncation)]
-#[allow(clippy::ptr_as_ptr)]
 pub fn x11_add_acl(type_tag: &str, value: &str) -> Result<(), AnyErr> {
     let (conn, _screen_num) = Connection::connect(None)?;
 
