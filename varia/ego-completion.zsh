@@ -14,7 +14,7 @@ _ego() {
     fi
 
     local context curcontext="$curcontext" state line
-    _arguments "${_arguments_options[@]}" \
+    _arguments "${_arguments_options[@]}" : \
 '-u+[Specify a username (default\: ego)]:USER:_users' \
 '--user=[Specify a username (default\: ego)]:USER:_users' \
 '--sudo[Use '\''sudo'\'' to change user]' \
