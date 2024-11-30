@@ -2,7 +2,7 @@ ego (a.k.a Alter Ego)
 =====================
 
 [![Crates.io version](https://img.shields.io/crates/v/ego.svg)](https://crates.io/crates/ego)
-[![Tests status](https://github.com/intgr/ego/workflows/Tests/badge.svg?branch=master)](https://github.com/intgr/ego/actions?query=workflow:Tests)
+[![Tests status](https://github.com/intgr/ego/workflows/Tests/badge.svg?branch=main)](https://github.com/intgr/ego/actions?query=workflow:Tests)
 
 > Do all your games need access to your documents, browser history, SSH private keys?
 >
