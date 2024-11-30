@@ -1,7 +1,9 @@
 {
   "extends": [
-    "config:base"
+    "mergeConfidence:all-badges",
+    "config:recommended"
   ],
+  "rangeStrategy": "bump",
   "lockFileMaintenance": {
     "enabled": true,
     "schedule": ["before 5am on saturday"]
@@ -9,7 +11,7 @@
   "packageRules": [
     {
       "matchManagers": ["cargo"],
-      "matchPackageNames": ["clap", "clap_complete"],
+      "matchPackageNames": ["clap", "clap_complete", "clap_builder", "clap_lex"],
       "groupName": "Clap updates"
     },
     {
