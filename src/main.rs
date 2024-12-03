@@ -7,6 +7,7 @@ extern crate simple_error;
 use crate::cli::{parse_args, Method};
 use crate::errors::{print_error, AnyErr, ErrorWithHint};
 use crate::util::{exec_command, have_command, run_command, sd_booted};
+use crate::wayland::wayland_security_context;
 use crate::x11::x11_add_acl;
 use log::{debug, info, log, warn, Level};
 use nix::libc::uid_t;
@@ -29,6 +30,7 @@ mod logging;
 #[cfg(test)]
 mod tests;
 mod util;
+mod wayland;
 mod x11;
 
 #[derive(Clone)]
@@ -230,6 +232,8 @@ fn prepare_wayland(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
 
     let path = path.unwrap();
     add_file_acl(path.as_path(), ctx.target_uid, ACL_RWX)?;
+
+    wayland_security_context()?;
 
     debug!("Wayland socket '{}' configured", path.display());
     Ok(vec![format!("WAYLAND_DISPLAY={}", path.to_str().unwrap())])

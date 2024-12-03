@@ -24,6 +24,8 @@ shell-words = "1.1.0"
 nix = { version = "0.29.0", default-features = false, features = ["user"] }
 anstyle = "1.0.10"
 xcb = "1.5.0"
+wayrs-client = "1.1.3"
+wayrs-protocols = { version = "0.14.3", features = ["security-context-v1"] }
 
 [features]
 default = []
