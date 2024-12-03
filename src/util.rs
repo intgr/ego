@@ -1,11 +1,12 @@
+use crate::errors::AnyErr;
 use crate::ErrorWithHint;
 use anstyle::Style;
-use log::debug;
+use log::{debug, info};
+use std::any::Any;
 use std::fmt::Display;
 use std::io::ErrorKind;
-use std::os::unix::prelude::CommandExt;
 use std::path::Path;
-use std::process::{Command, Output};
+use std::process::{exit, Command, Output};
 use std::{env, io};
 
 /// Paint string `content` with ANSI colors `style` for printing to console.
@@ -39,12 +40,19 @@ fn report_command_error(err: &io::Error, program: &str, args: &[String]) -> Erro
 }
 
 /// Exec command (ending the current process) or return error.
-pub fn exec_command(program: &str, args: &[String]) -> Result<(), ErrorWithHint> {
+pub fn exec_command(program: &str, args: &[String]) -> Result<(), AnyErr> {
     debug!("Executing: {program} {}", shell_words::join(args));
     // If this call returns at all, it was an error
-    let err = Command::new(program).args(args).exec();
-
-    Err(report_command_error(&err, program, args))
+    match Command::new(program).args(args).spawn() {
+        Ok(mut a) => {
+            a.wait()?;
+        }
+        Err(err) => {
+            return Err(report_command_error(&err, program, args).into());
+        }
+    }
+    info!("Exiting after spawn");
+    exit(0);
 }
 
 /// Run command as subprocess. Return output if status was 0, otherwise return as error.
