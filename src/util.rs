@@ -22,9 +22,8 @@ pub fn sd_booted() -> bool {
 /// Test if a command is present in `$PATH`
 /// Adapted from <https://stackoverflow.com/a/37499032/177663>
 pub fn have_command<P: AsRef<Path>>(exe_name: P) -> bool {
-    env::var_os("PATH").map_or(false, |paths| {
-        env::split_paths(&paths).any(|dir| dir.join(&exe_name).is_file())
-    })
+    env::var_os("PATH")
+        .is_some_and(|paths| env::split_paths(&paths).any(|dir| dir.join(&exe_name).is_file()))
 }
 
 fn report_command_error(err: &io::Error, program: &str, args: &[String]) -> ErrorWithHint {
