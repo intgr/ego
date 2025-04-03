@@ -21,6 +21,6 @@ jobs:
       - name: Test suite
         run: docker run --rm ego-build cargo test --color=always
       - name: Clippy lints
-        run: docker run --rm ego-build cargo clippy --color=always
+        run: docker run --rm ego-build cargo clippy --color=always --all-targets --all-features -- -D warnings
       - name: rustfmt
         run: docker run --rm ego-build cargo fmt -- --color=always --check
