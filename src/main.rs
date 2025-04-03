@@ -1,5 +1,7 @@
 #![warn(clippy::pedantic)]
+#![warn(clippy::cargo)]
 #![allow(clippy::module_name_repetitions)]
+#![allow(clippy::multiple_crate_versions)]
 
 #[macro_use]
 extern crate simple_error;

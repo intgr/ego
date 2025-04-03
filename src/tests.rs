@@ -28,11 +28,11 @@ fn snapshot() -> &'static Assert {
 fn assert_log_snapshot(expected_path: &Data) {
     testing_logger::validate(|logs| {
         let output = logs.iter().fold(String::new(), |mut a, b| {
-            write!(a, "{}: {}\n", b.level.as_str(), b.body).unwrap();
+            writeln!(a, "{}: {}", b.level.as_str(), b.body).unwrap();
             a
         });
         snapshot().eq(output, expected_path);
-    })
+    });
 }
 
 fn render_completion(generator: impl Generator) -> Data {
@@ -171,10 +171,10 @@ fn test_have_command() {
 #[test]
 fn test_check_user_homedir() {
     let ctx = EgoContext {
-        runtime_dir: Default::default(),
+        runtime_dir: PathBuf::default(),
         target_user: "root".to_string(),
         target_uid: 0,
-        target_user_shell: Default::default(),
+        target_user_shell: PathBuf::default(),
         target_user_homedir: "/root".into(),
     };
 
