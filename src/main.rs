@@ -192,10 +192,9 @@ fn check_user_homedir(ctx: &EgoContext) {
 
             log!(
                 level,
-                "User {} home directory {} is not accessible: {}",
+                "User {} home directory {} is not accessible: {err}",
                 ctx.target_user,
                 home.display(),
-                err
             );
         }
     }
