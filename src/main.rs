@@ -17,7 +17,7 @@ use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
 use simple_error::SimpleError;
 use std::env::VarError;
 use std::fs::DirBuilder;
-use std::io::ErrorKind::PermissionDenied;
+use std::io::ErrorKind::{NotFound, PermissionDenied};
 use std::os::unix::fs::DirBuilderExt;
 use std::os::unix::fs::MetadataExt;
 use std::os::unix::fs::PermissionsExt;
@@ -271,7 +271,11 @@ fn prepare_pulseaudio(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
     add_file_acl(path.as_path(), ctx.target_uid, ACL_EXECUTE)?;
 
     let mut envs = prepare_pulseaudio_socket(path.as_path())?;
-    envs.extend(prepare_pulseaudio_cookie(ctx)?);
+    if !envs.is_empty() {
+        envs.extend(prepare_pulseaudio_cookie(ctx)?);
+    } else {
+        return Ok(envs);
+    }
 
     debug!("PulseAudio dir '{}' configured", path.display());
     Ok(envs)
@@ -280,11 +284,15 @@ fn prepare_pulseaudio(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
 /// Ensure permissions of PulseAudio socket `/run/user/1000/pulse/native`
 fn prepare_pulseaudio_socket(dir: &Path) -> Result<Vec<String>, AnyErr> {
     let path = dir.join("native");
-    let meta = path.metadata();
-    if let Err(msg) = meta {
-        bail!("'{}': {msg}", path.display());
-    }
-    let mode = meta.unwrap().permissions().mode();
+    let meta = match path.metadata() {
+        Ok(meta) => meta,
+        Err(err) if err.kind() == NotFound => {
+            debug!("PulseAudio socket '{}' not found, skipping", path.display());
+            return Ok(vec![]);
+        }
+        Err(err) => bail!("'{}': {err}", path.display()),
+    };
+    let mode = meta.permissions().mode();
 
     #[allow(clippy::items_after_statements)]
     const WORLD_READ_PERMS: u32 = 0o006;
@@ -302,33 +310,36 @@ fn prepare_pulseaudio_socket(dir: &Path) -> Result<Vec<String>, AnyErr> {
 }
 
 /// Try various ways to discover the current user's PulseAudio authentication cookie.
-fn find_pulseaudio_cookie() -> Result<PathBuf, AnyErr> {
+fn find_pulseaudio_cookie() -> Result<Option<PathBuf>, AnyErr> {
     // Try PULSE_COOKIE
     if let Some(path) = getenv_optional("PULSE_COOKIE")? {
-        return Ok(PathBuf::from(path));
+        return Ok(Some(PathBuf::from(path)));
     }
     // Try ~/.config/pulse/cookie
     let home = getenv_path("HOME")?;
     let path = home.join(".config/pulse/cookie");
     if path.is_file() {
-        return Ok(path);
+        return Ok(Some(path));
     }
 
     // Try ~/.pulse-cookie, for older PulseAudio versions
     let path = home.join(".pulse-cookie");
     if path.is_file() {
-        return Ok(path);
+        return Ok(Some(path));
     }
 
-    bail!(
-        "Cannot locate PulseAudio cookie \
-        (tried $PULSE_COOKIE, ~/.config/pulse/cookie, ~/.pulse-cookie)"
-    )
+    Ok(None)
 }
 
 /// Publish current user's pulse-cookie for target user
 fn prepare_pulseaudio_cookie(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
-    let cookie_path = find_pulseaudio_cookie()?;
+    let cookie_path = match find_pulseaudio_cookie()? {
+        Some(path) => path,
+        None => {
+            debug!("PulseAudio cookie not found, skipping");
+            return Ok(vec![]);
+        }
+    };
     let target_path = ensure_ego_rundir(ctx)?.join("pulse-cookie");
     debug!(
         "Publishing PulseAudio cookie {} to {}",
