@@ -16,7 +16,7 @@ use nix::unistd::{Uid, User};
 use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
 use simple_error::SimpleError;
 use std::env::VarError;
-use std::fs::DirBuilder;
+use std::fs::{DirBuilder, Metadata};
 use std::io::ErrorKind::{NotFound, PermissionDenied};
 use std::os::unix::fs::DirBuilderExt;
 use std::os::unix::fs::MetadataExt;
@@ -263,35 +263,28 @@ fn prepare_x11(ctx: &EgoContext, old_xhost: bool) -> Result<Vec<String>, AnyErr>
 ///
 /// The actual socket `/run/user/1000/pulse/native` already has full read-write permissions.
 fn prepare_pulseaudio(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
-    let path = ctx.runtime_dir.join("pulse");
-    if !path.is_dir() {
-        debug!("PulseAudio dir '{}' not found, skipping", path.display());
-        return Ok(vec![]);
-    }
-    add_file_acl(path.as_path(), ctx.target_uid, ACL_EXECUTE)?;
+    let pulse_dir = ctx.runtime_dir.join("pulse");
+    let socket_path = pulse_dir.join("native");
+    let socket_meta = match socket_path.metadata() {
+        Ok(meta) => meta,
+        Err(err) if err.kind() == NotFound => {
+            debug!("PulseAudio socket not found, skipping");
+            return Ok(vec![]);
+        },
+        Err(err) => bail!("'{}': {err}", socket_path.display()),
+    };
 
-    let mut envs = prepare_pulseaudio_socket(path.as_path())?;
-    if !envs.is_empty() {
-        envs.extend(prepare_pulseaudio_cookie(ctx)?);
-    } else {
-        return Ok(envs);
-    }
+    add_file_acl(pulse_dir.as_path(), ctx.target_uid, ACL_EXECUTE)?;
 
-    debug!("PulseAudio dir '{}' configured", path.display());
+    let mut envs = prepare_pulseaudio_socket(socket_path.as_path(), socket_meta)?;
+    envs.extend(prepare_pulseaudio_cookie(ctx)?);
+
+    debug!("PulseAudio dir '{}' configured", pulse_dir.display());
     Ok(envs)
 }
 
 /// Ensure permissions of PulseAudio socket `/run/user/1000/pulse/native`
-fn prepare_pulseaudio_socket(dir: &Path) -> Result<Vec<String>, AnyErr> {
-    let path = dir.join("native");
-    let meta = match path.metadata() {
-        Ok(meta) => meta,
-        Err(err) if err.kind() == NotFound => {
-            debug!("PulseAudio socket '{}' not found, skipping", path.display());
-            return Ok(vec![]);
-        }
-        Err(err) => bail!("'{}': {err}", path.display()),
-    };
+fn prepare_pulseaudio_socket(path: &Path, meta: Metadata) -> Result<Vec<String>, AnyErr> {
     let mode = meta.permissions().mode();
 
     #[allow(clippy::items_after_statements)]
@@ -310,36 +303,33 @@ fn prepare_pulseaudio_socket(dir: &Path) -> Result<Vec<String>, AnyErr> {
 }
 
 /// Try various ways to discover the current user's PulseAudio authentication cookie.
-fn find_pulseaudio_cookie() -> Result<Option<PathBuf>, AnyErr> {
+fn find_pulseaudio_cookie() -> Result<PathBuf, AnyErr> {
     // Try PULSE_COOKIE
     if let Some(path) = getenv_optional("PULSE_COOKIE")? {
-        return Ok(Some(PathBuf::from(path)));
+        return Ok(PathBuf::from(path));
     }
     // Try ~/.config/pulse/cookie
     let home = getenv_path("HOME")?;
     let path = home.join(".config/pulse/cookie");
     if path.is_file() {
-        return Ok(Some(path));
+        return Ok(path);
     }
 
     // Try ~/.pulse-cookie, for older PulseAudio versions
     let path = home.join(".pulse-cookie");
     if path.is_file() {
-        return Ok(Some(path));
+        return Ok(path);
     }
 
-    Ok(None)
+    bail!(
+        "Cannot locate PulseAudio cookie \
+        (tried $PULSE_COOKIE, ~/.config/pulse/cookie, ~/.pulse-cookie)"
+    )
 }
 
 /// Publish current user's pulse-cookie for target user
 fn prepare_pulseaudio_cookie(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
-    let cookie_path = match find_pulseaudio_cookie()? {
-        Some(path) => path,
-        None => {
-            debug!("PulseAudio cookie not found, skipping");
-            return Ok(vec![]);
-        }
-    };
+    let cookie_path = find_pulseaudio_cookie()?;
     let target_path = ensure_ego_rundir(ctx)?.join("pulse-cookie");
     debug!(
         "Publishing PulseAudio cookie {} to {}",
