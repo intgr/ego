@@ -42,7 +42,7 @@ Ego aims to come with sane defaults and be easy to set up.
 
 1. Run:
 
-       cargo install ego
+       cargo install --locked ego
        sudo cp ~/.cargo/bin/ego /usr/local/bin/
 
 2. Create local user named "ego": <sup>[1]</sup>
