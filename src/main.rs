@@ -270,13 +270,13 @@ fn prepare_pulseaudio(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
         Err(err) if err.kind() == NotFound => {
             debug!("PulseAudio socket not found, skipping");
             return Ok(vec![]);
-        },
+        }
         Err(err) => bail!("'{}': {err}", socket_path.display()),
     };
 
     add_file_acl(pulse_dir.as_path(), ctx.target_uid, ACL_EXECUTE)?;
 
-    let mut envs = prepare_pulseaudio_socket(socket_path.as_path(), socket_meta)?;
+    let mut envs = prepare_pulseaudio_socket(socket_path.as_path(), &socket_meta)?;
     envs.extend(prepare_pulseaudio_cookie(ctx)?);
 
     debug!("PulseAudio dir '{}' configured", pulse_dir.display());
@@ -284,7 +284,7 @@ fn prepare_pulseaudio(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
 }
 
 /// Ensure permissions of PulseAudio socket `/run/user/1000/pulse/native`
-fn prepare_pulseaudio_socket(path: &Path, meta: Metadata) -> Result<Vec<String>, AnyErr> {
+fn prepare_pulseaudio_socket(path: &Path, meta: &Metadata) -> Result<Vec<String>, AnyErr> {
     let mode = meta.permissions().mode();
 
     #[allow(clippy::items_after_statements)]
