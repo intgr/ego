@@ -16,8 +16,8 @@ use nix::unistd::{Uid, User};
 use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
 use simple_error::SimpleError;
 use std::env::VarError;
-use std::fs::DirBuilder;
-use std::io::ErrorKind::PermissionDenied;
+use std::fs::{DirBuilder, Metadata};
+use std::io::ErrorKind::{NotFound, PermissionDenied};
 use std::os::unix::fs::DirBuilderExt;
 use std::os::unix::fs::MetadataExt;
 use std::os::unix::fs::PermissionsExt;
@@ -263,28 +263,29 @@ fn prepare_x11(ctx: &EgoContext, old_xhost: bool) -> Result<Vec<String>, AnyErr>
 ///
 /// The actual socket `/run/user/1000/pulse/native` already has full read-write permissions.
 fn prepare_pulseaudio(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
-    let path = ctx.runtime_dir.join("pulse");
-    if !path.is_dir() {
-        debug!("PulseAudio dir '{}' not found, skipping", path.display());
-        return Ok(vec![]);
-    }
-    add_file_acl(path.as_path(), ctx.target_uid, ACL_EXECUTE)?;
+    let pulse_dir = ctx.runtime_dir.join("pulse");
+    let socket_path = pulse_dir.join("native");
+    let socket_meta = match socket_path.metadata() {
+        Ok(meta) => meta,
+        Err(err) if err.kind() == NotFound => {
+            debug!("PulseAudio socket not found, skipping");
+            return Ok(vec![]);
+        }
+        Err(err) => bail!("'{}': {err}", socket_path.display()),
+    };
 
-    let mut envs = prepare_pulseaudio_socket(path.as_path())?;
+    add_file_acl(pulse_dir.as_path(), ctx.target_uid, ACL_EXECUTE)?;
+
+    let mut envs = prepare_pulseaudio_socket(socket_path.as_path(), &socket_meta)?;
     envs.extend(prepare_pulseaudio_cookie(ctx)?);
 
-    debug!("PulseAudio dir '{}' configured", path.display());
+    debug!("PulseAudio dir '{}' configured", pulse_dir.display());
     Ok(envs)
 }
 
 /// Ensure permissions of PulseAudio socket `/run/user/1000/pulse/native`
-fn prepare_pulseaudio_socket(dir: &Path) -> Result<Vec<String>, AnyErr> {
-    let path = dir.join("native");
-    let meta = path.metadata();
-    if let Err(msg) = meta {
-        bail!("'{}': {msg}", path.display());
-    }
-    let mode = meta.unwrap().permissions().mode();
+fn prepare_pulseaudio_socket(path: &Path, meta: &Metadata) -> Result<Vec<String>, AnyErr> {
+    let mode = meta.permissions().mode();
 
     #[allow(clippy::items_after_statements)]
     const WORLD_READ_PERMS: u32 = 0o006;
