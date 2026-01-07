@@ -8,8 +8,8 @@ extern crate simple_error;
 
 use crate::cli::{parse_args, Method};
 use crate::errors::{print_error, AnyErr, ErrorWithHint};
-use crate::util::{exec_command, have_command, run_command, sd_booted};
-use crate::x11::x11_add_acl;
+use crate::util::{exec_command, have_command, sd_booted};
+use crate::x11::{x11_add_acl_with_fallback, x11_xhost_add_acl};
 use log::{debug, info, log, warn, Level};
 use nix::libc::uid_t;
 use nix::unistd::{Uid, User};
@@ -248,10 +248,9 @@ fn prepare_x11(ctx: &EgoContext, old_xhost: bool) -> Result<Vec<String>, AnyErr>
 
     if old_xhost {
         warn!("--old-xhost is deprecated. If there are issues with the new method, please report a bug.");
-        let grant = format!("+si:localuser:{}", ctx.target_user);
-        run_command("xhost", &[grant])?;
+        x11_xhost_add_acl("localuser", &ctx.target_user)?;
     } else {
-        x11_add_acl("localuser", &ctx.target_user)?;
+        x11_add_acl_with_fallback("localuser", &ctx.target_user)?;
     }
     // TODO should also test /tmp/.X11-unix/X0 permissions?
 

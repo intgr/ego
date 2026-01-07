@@ -11,7 +11,7 @@ use snapbox::{file, Data};
 
 use crate::cli::{build_cli, parse_args, Method};
 use crate::util::have_command;
-use crate::x11::x11_add_acl;
+use crate::x11::x11_xcb_add_acl;
 use crate::{check_user_homedir, get_wayland_socket, EgoContext};
 
 /// `vec![]` constructor that converts arguments to String
@@ -112,10 +112,10 @@ fn wayland_socket() {
 fn test_x11_error() {
     env::remove_var("DISPLAY");
 
-    let err = x11_add_acl("test", "test").unwrap_err();
+    let err = x11_xcb_add_acl("test", "test").unwrap_err();
     assert_eq!(
         err.to_string(),
-        "Connection closed, error during parsing display string"
+        "Error connecting to X11: Connection closed, error during parsing display string"
     );
 }
 
