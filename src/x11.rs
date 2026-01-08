@@ -2,7 +2,7 @@ use log::{debug, warn};
 use xcb::x::{ChangeHosts, Family, HostMode};
 use xcb::{ConnError, Connection};
 
-use crate::errors::{print_error, AnyErr, ErrorWithHint};
+use crate::errors::{AnyErr, ErrorWithHint, print_error};
 use crate::util::run_command;
 
 /// Try `libxcb`, fall back to `xhost`.

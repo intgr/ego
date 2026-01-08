@@ -6,14 +6,14 @@
 #[macro_use]
 extern crate simple_error;
 
-use crate::cli::{parse_args, Method};
-use crate::errors::{print_error, AnyErr, ErrorWithHint};
+use crate::cli::{Method, parse_args};
+use crate::errors::{AnyErr, ErrorWithHint, print_error};
 use crate::util::{exec_command, have_command, sd_booted};
 use crate::x11::{x11_add_acl_with_fallback, x11_xhost_add_acl};
-use log::{debug, info, log, warn, Level};
+use log::{Level, debug, info, log, warn};
 use nix::libc::uid_t;
 use nix::unistd::{Uid, User};
-use posix_acl::{PosixACL, Qualifier, ACL_EXECUTE, ACL_READ, ACL_RWX};
+use posix_acl::{ACL_EXECUTE, ACL_READ, ACL_RWX, PosixACL, Qualifier};
 use simple_error::SimpleError;
 use std::env::VarError;
 use std::fs::{DirBuilder, Metadata};
@@ -243,7 +243,10 @@ fn prepare_x11(ctx: &EgoContext, old_xhost: bool) -> Result<Vec<String>, AnyErr>
     }
 
     if old_xhost {
-        warn!("--old-xhost is deprecated. If there are issues with the new method, please report a bug.");
+        warn!(
+            "--old-xhost is deprecated. \
+            If there are issues with the new method, please report a bug."
+        );
         x11_xhost_add_acl("localuser", &ctx.target_user)?;
     } else {
         x11_add_acl_with_fallback("localuser", &ctx.target_user)?;
@@ -420,12 +423,14 @@ fn run_machinectl_command(
     args.push("/bin/sh".to_string());
     args.push("-c".to_string());
     let remote_cmd = if remote_cmd.is_empty() {
-        vec![require_with!(
-            ctx.target_user_shell.to_str(),
-            "User '{}' shell has unexpected characters",
-            ctx.target_user
-        )
-        .to_string()]
+        vec![
+            require_with!(
+                ctx.target_user_shell.to_str(),
+                "User '{}' shell has unexpected characters",
+                ctx.target_user
+            )
+            .to_string(),
+        ]
     } else {
         remote_cmd
     };

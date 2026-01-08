@@ -1,4 +1,4 @@
-use clap::{command, Arg, ArgAction, ArgGroup, Command, ValueHint};
+use clap::{Arg, ArgAction, ArgGroup, Command, ValueHint, command};
 use log::Level;
 use std::ffi::OsString;
 
