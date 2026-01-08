@@ -29,11 +29,32 @@ Manual setup
 ------------
 Ego aims to come with sane defaults and be easy to set up.
 
-**Requirements:**
-* [Rust & cargo](https://www.rust-lang.org/tools/install)
+#### Installation & usage
+
+* No need to check out the repository
+* Install `cargo` and `libacl` (see below for optional dependencies), then:
+
+```shell
+cargo install ego
+sudo cp ~/.cargo/bin/ego /usr/local/bin/
+
+# Use existing user
+ego --user=<username> xdg-open .
+
+# Or create local user named "ego": [1]
+sudo useradd ego --uid 155 --create-home
+ego xdg-open .
+```
+
+[1] `ego` is the default target username.
+No extra groups are needed by the ego user.
+UID below 1000 hides this user on the login screen.
+
+#### Requirements
+* [Rust & cargo](https://rust-lang.org/tools/install/)
 * `libacl.so` library (Debian/Ubuntu: libacl1-dev; Fedora: libacl-devel; Arch: acl)
 
-**Recommended:**
+#### Recommended
 * `libxcb.so` library (Debian/Ubuntu: libxcb1; Fedora: libxcb; Arch: libxcb)
 
   Only used when X11 `DISPLAY` is set, can be disabled with `--old-xhost`.
@@ -41,26 +62,8 @@ Ego aims to come with sane defaults and be easy to set up.
 * `machinectl` command (Debian/Ubuntu/Fedora: systemd-container; Arch: systemd)
 * `xdg-desktop-portal-gtk` (Debian/Ubuntu/Fedora/Arch: xdg-desktop-portal-gtk)
 
-**Installation:**
-
-1. Run:
-
-       cargo install ego
-       sudo cp ~/.cargo/bin/ego /usr/local/bin/
-
-2. Create local user named "ego": <sup>[1]</sup>
-
-       sudo useradd ego --uid 155 --create-home
-
-3. That's all, try it:
-
-       ego xdg-open .
-
-[1] No extra groups are needed by the ego user.
-UID below 1000 hides this user on the login screen.
-
 ### Avoid password prompt
-If using "machinectl" mode (default if available), you need the rather new systemd version >=247
+If using "machinectl" mode (default if available), you need systemd version >=247
 and polkit >=0.106 to do this securely.
 
 Create file `/etc/polkit-1/rules.d/50-ego-machinectl.rules`, polkit will automatically load it
@@ -85,6 +88,10 @@ Changelog
 ---------
 
 ##### Unreleased
+* **Fix:** Handle missing PulseAudio socket when directory exists (#190)
+
+  Contributed by **@mio-19**, thanks!
+
 * Use X11 protocol directly via `libxcb`. The `xhost` dependency is no longer needed. (#163)
 
   Use `--old-xhost` to revert to the old behavior.
