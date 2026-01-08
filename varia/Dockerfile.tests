@@ -27,4 +27,5 @@ RUN mkdir src/ && \
 
 # Do the actual build
 COPY . .
-RUN cargo build --bins --tests --color=always
+RUN cargo build --all-targets --color=always
+RUN cargo install --locked --debug --path=.
