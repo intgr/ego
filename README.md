@@ -87,7 +87,7 @@ For sudo, add the following to `/etc/sudoers` (replace `<myname>` with your own 
 Changelog
 ---------
 
-##### Unreleased
+##### 1.2.0 (2026-01-08)
 * **Fix:** Handle missing PulseAudio socket when directory exists (#190)
 
   Contributed by **@mio-19**, thanks!
