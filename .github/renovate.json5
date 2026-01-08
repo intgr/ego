@@ -1,12 +1,20 @@
 {
   "extends": [
     "mergeConfidence:all-badges",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(deps)",
+    ":semanticCommitScopeDisabled",
     "config:recommended"
   ],
   "rangeStrategy": "bump",
   "lockFileMaintenance": {
+    // Open PR to update lockfile every 1st day of month & automerge every 2nd
     "enabled": true,
-    "schedule": ["before 5am on saturday"]
+    "automerge": true,
+    "automergeType": "pr",
+    "platformAutomerge": false,
+    "schedule": ["* * * * 1"],
+    "automergeSchedule": ["* * * * 2"],
   },
   "packageRules": [
     {
@@ -15,10 +23,10 @@
       "groupName": "Clap updates"
     },
     {
+      // Ignore Cargo patch updates -- updated with lockfile maintenance
       "matchManagers": ["cargo"],
       "matchUpdateTypes": ["patch"],
-      "groupName": "Cargo patch",
-      "schedule": ["before 5am on saturday"]
+      "enabled": false,
     }
   ]
 }
