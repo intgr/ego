@@ -97,6 +97,7 @@ fn wayland_socket() {
 }
 
 #[test]
+#[cfg_attr(not(target_os = "linux"), ignore = "Linux-specifix")]
 fn test_x11_error() {
     env::remove_var("DISPLAY");
 
@@ -145,6 +146,7 @@ fn test_have_command() {
 }
 
 #[test]
+#[cfg_attr(not(target_os = "linux"), ignore = "Linux-specifix")]
 fn test_check_user_homedir() {
     let ctx = EgoContext {
         runtime_dir: PathBuf::default(),
