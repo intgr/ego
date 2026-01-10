@@ -49,10 +49,7 @@ fn main_inner() -> Result<(), AnyErr> {
     let mut vars: Vec<String> = Vec::new();
     let ctx = create_context(&args.user)?;
 
-    info!(
-        "Setting up Alter Ego for target user {} ({})",
-        ctx.target_user, ctx.target_uid
-    );
+    info!("Setting up Alter Ego for target user {} ({})", ctx.target_user, ctx.target_uid);
 
     check_user_homedir(&ctx);
 
@@ -144,12 +141,7 @@ fn get_target_user(username: &str) -> Result<User, AnyErr> {
 
 fn create_context(username: &str) -> Result<EgoContext, AnyErr> {
     let user = get_target_user(username)?;
-    debug!(
-        "Found user '{}' UID {} shell '{}'",
-        user.name,
-        user.uid,
-        user.shell.display()
-    );
+    debug!("Found user '{}' UID {} shell '{}'", user.name, user.uid, user.shell.display());
     let runtime_dir = getenv_path("XDG_RUNTIME_DIR")?;
     Ok(EgoContext {
         runtime_dir,
@@ -232,8 +224,9 @@ fn prepare_wayland(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
     let path = path.unwrap();
     add_file_acl(path.as_path(), ctx.target_uid, ACL_RWX)?;
 
+    let env = format!("WAYLAND_DISPLAY={}", path.to_str().unwrap());
     debug!("Wayland socket '{}' configured", path.display());
-    Ok(vec![format!("WAYLAND_DISPLAY={}", path.to_str().unwrap())])
+    Ok(vec![env])
 }
 
 /// Detect `DISPLAY` and grant permissions via X11 protocol `ChangeHosts` command
@@ -254,7 +247,8 @@ fn prepare_x11(ctx: &EgoContext, old_xhost: bool) -> Result<Vec<String>, AnyErr>
     }
     // TODO should also test /tmp/.X11-unix/X0 permissions?
 
-    Ok(vec![format!("DISPLAY={}", display.unwrap())])
+    let env = format!("DISPLAY={}", display.unwrap());
+    Ok(vec![env])
 }
 
 /// Add execute permissions to PulseAudio directory (e.g. `/run/user/1000/pulse`)
@@ -289,16 +283,11 @@ fn prepare_pulseaudio_socket(path: &Path, meta: &Metadata) -> Result<Vec<String>
     #[allow(clippy::items_after_statements)]
     const WORLD_READ_PERMS: u32 = 0o006;
     if mode & WORLD_READ_PERMS != WORLD_READ_PERMS {
-        bail!(
-            "Unexpected permissions on '{}': {:o}",
-            path.display(),
-            mode & 0o777
-        );
+        bail!("Unexpected permissions on '{}': {:o}", path.display(), mode & 0o777);
     }
-    Ok(vec![format!(
-        "PULSE_SERVER=unix:{}",
-        path.to_str().unwrap()
-    )])
+
+    let env = format!("PULSE_SERVER=unix:{}", path.to_str().unwrap());
+    Ok(vec![env])
 }
 
 /// Try various ways to discover the current user's PulseAudio authentication cookie.
@@ -330,18 +319,13 @@ fn find_pulseaudio_cookie() -> Result<PathBuf, AnyErr> {
 fn prepare_pulseaudio_cookie(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
     let cookie_path = find_pulseaudio_cookie()?;
     let target_path = ensure_ego_rundir(ctx)?.join("pulse-cookie");
-    debug!(
-        "Publishing PulseAudio cookie {} to {}",
-        cookie_path.display(),
-        target_path.display()
-    );
+
+    debug!("Publishing PulseAudio cookie {} to {}", cookie_path.display(), target_path.display());
     fs::copy(cookie_path.as_path(), target_path.as_path())?;
     add_file_acl(target_path.as_path(), ctx.target_uid, ACL_READ)?;
 
-    Ok(vec![format!(
-        "PULSE_COOKIE={}",
-        target_path.to_str().unwrap()
-    )])
+    let env = format!("PULSE_COOKIE={}", target_path.to_str().unwrap());
+    Ok(vec![env])
 }
 
 /// Create runtime dir for Ego itself (e.g. `/run/user/1000/ego`) and make it readable for target
@@ -377,10 +361,7 @@ fn run_sudo_command(
     remote_cmd: Vec<String>,
 ) -> Result<(), AnyErr> {
     if !remote_cmd.is_empty() && remote_cmd[0].starts_with('-') {
-        bail!(
-            "Command may not start with '-' (command is: '{}')",
-            remote_cmd[0]
-        );
+        bail!("Command may not start with '-' (command is: '{}')", remote_cmd[0]);
     }
 
     let mut args = vec!["-Hiu".to_string(), ctx.target_user.clone()];

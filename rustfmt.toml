@@ -1,0 +1,4 @@
+fn_call_width = 100
+struct_lit_width = 100
+single_line_if_else_max_width = 100
+edition = "2024"
