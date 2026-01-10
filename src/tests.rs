@@ -55,28 +55,19 @@ fn render_completion(generator: impl Generator) -> Data {
 /// ```
 #[test]
 fn shell_completion_zsh() {
-    snapshot().eq(
-        render_completion(Zsh),
-        file!["../varia/ego-completion.zsh"].raw(),
-    );
+    snapshot().eq(render_completion(Zsh), file!["../varia/ego-completion.zsh"].raw());
 }
 
 /// Run `SNAPSHOTS=overwrite cargo test` to update
 #[test]
 fn shell_completion_bash() {
-    snapshot().eq(
-        render_completion(Bash),
-        file!["../varia/ego-completion.bash"],
-    );
+    snapshot().eq(render_completion(Bash), file!["../varia/ego-completion.bash"]);
 }
 
 /// Run `SNAPSHOTS=overwrite cargo test` to update
 #[test]
 fn shell_completion_fish() {
-    snapshot().eq(
-        render_completion(Fish),
-        file!["../varia/ego-completion.fish"].raw(),
-    );
+    snapshot().eq(render_completion(Fish), file!["../varia/ego-completion.fish"].raw());
 }
 
 fn test_context() -> EgoContext {
@@ -102,10 +93,7 @@ fn wayland_socket() {
     );
 
     env::set_var("WAYLAND_DISPLAY", "/tmp/wayland-7");
-    assert_eq!(
-        get_wayland_socket(&ctx).unwrap().unwrap(),
-        PathBuf::from("/tmp/wayland-7")
-    );
+    assert_eq!(get_wayland_socket(&ctx).unwrap().unwrap(), PathBuf::from("/tmp/wayland-7"));
 }
 
 #[test]
@@ -134,32 +122,20 @@ fn test_parse_args() {
     assert_eq!(args.method, None);
 
     // --user
-    assert_eq!(
-        parse_args(vec!["ego", "-u", "myself"]).user,
-        "myself".to_string()
-    );
+    assert_eq!(parse_args(vec!["ego", "-u", "myself"]).user, "myself".to_string());
     // command with -flags
-    assert_eq!(
-        parse_args(vec!["ego", "ls", "-la"]).command,
-        string_vec!["ls", "-la"]
-    );
+    assert_eq!(parse_args(vec!["ego", "ls", "-la"]).command, string_vec!["ls", "-la"]);
     // verbosity
     assert_eq!(parse_args(vec!["ego", "-v"]).log_level, Level::Info);
     assert_eq!(parse_args(vec!["ego", "-v", "-v"]).log_level, Level::Debug);
     assert_eq!(parse_args(vec!["ego", "-vvvvvv"]).log_level, Level::Trace);
     // --machinectl
-    assert_eq!(
-        parse_args(vec!["ego", "--machinectl"]).method,
-        Some(Method::Machinectl)
-    );
+    assert_eq!(parse_args(vec!["ego", "--machinectl"]).method, Some(Method::Machinectl));
 }
 
 #[test]
 fn test_cli_help() {
-    snapshot().eq(
-        build_cli().render_help().to_string(),
-        file!["snapshots/ego.help"],
-    );
+    snapshot().eq(build_cli().render_help().to_string(), file!["snapshots/ego.help"]);
 }
 
 #[test]
@@ -198,10 +174,7 @@ fn test_check_user_homedir() {
     });
 
     info!("TEST: Wrong owner");
-    check_user_homedir(&EgoContext {
-        target_uid: 1234,
-        ..ctx.clone()
-    });
+    check_user_homedir(&EgoContext { target_uid: 1234, ..ctx.clone() });
 
     assert_log_snapshot(&file!["snapshots/check_user_homedir.txt"]);
 }
