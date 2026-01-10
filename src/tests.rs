@@ -3,16 +3,16 @@ use std::fmt::Write;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 
-use clap_complete::shells::{Bash, Fish, Zsh};
 use clap_complete::Generator;
-use log::{info, Level};
+use clap_complete::shells::{Bash, Fish, Zsh};
+use log::{Level, info};
 use snapbox::Assert;
-use snapbox::{file, Data};
+use snapbox::{Data, file};
 
-use crate::cli::{build_cli, parse_args, Method};
+use crate::cli::{Method, build_cli, parse_args};
 use crate::util::have_command;
 use crate::x11::x11_xcb_add_acl;
-use crate::{check_user_homedir, get_wayland_socket, EgoContext};
+use crate::{EgoContext, check_user_homedir, get_wayland_socket};
 
 /// `vec![]` constructor that converts arguments to String
 macro_rules! string_vec {
@@ -80,26 +80,28 @@ fn test_context() -> EgoContext {
     }
 }
 
+/// SAFETY: unsafe changes to environment variables
 #[test]
 fn wayland_socket() {
     let ctx = test_context();
-    env::remove_var("WAYLAND_DISPLAY");
+    unsafe { env::remove_var("WAYLAND_DISPLAY") };
     assert_eq!(get_wayland_socket(&ctx).unwrap(), None);
 
-    env::set_var("WAYLAND_DISPLAY", "wayland-7");
+    unsafe { env::set_var("WAYLAND_DISPLAY", "wayland-7") };
     assert_eq!(
         get_wayland_socket(&ctx).unwrap().unwrap(),
         PathBuf::from("/run/user/1000/wayland-7")
     );
 
-    env::set_var("WAYLAND_DISPLAY", "/tmp/wayland-7");
+    unsafe { env::set_var("WAYLAND_DISPLAY", "/tmp/wayland-7") };
     assert_eq!(get_wayland_socket(&ctx).unwrap().unwrap(), PathBuf::from("/tmp/wayland-7"));
 }
 
+/// SAFETY: unsafe changes to environment variables
 #[test]
 #[cfg_attr(not(target_os = "linux"), ignore = "Linux-specifix")]
 fn test_x11_error() {
-    env::remove_var("DISPLAY");
+    unsafe { env::remove_var("DISPLAY") };
 
     let err = x11_xcb_add_acl("test", "test").unwrap_err();
     assert_eq!(
