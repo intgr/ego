@@ -1,4 +1,3 @@
-use std::env;
 use std::fmt::Write;
 use std::path::PathBuf;
 use std::sync::OnceLock;
@@ -80,28 +79,30 @@ fn test_context() -> EgoContext {
     }
 }
 
-/// SAFETY: unsafe changes to environment variables
 #[test]
 fn wayland_socket() {
     let ctx = test_context();
-    unsafe { env::remove_var("WAYLAND_DISPLAY") };
-    assert_eq!(get_wayland_socket(&ctx).unwrap(), None);
 
-    unsafe { env::set_var("WAYLAND_DISPLAY", "wayland-7") };
+    let env = env_lock::lock_env([("WAYLAND_DISPLAY", None::<&str>)]);
+    assert_eq!(get_wayland_socket(&ctx).unwrap(), None);
+    drop(env);
+
+    let env = env_lock::lock_env([("WAYLAND_DISPLAY", Some("wayland-7"))]);
     assert_eq!(
         get_wayland_socket(&ctx).unwrap().unwrap(),
         PathBuf::from("/run/user/1000/wayland-7")
     );
+    drop(env);
 
-    unsafe { env::set_var("WAYLAND_DISPLAY", "/tmp/wayland-7") };
+    let env = env_lock::lock_env([("WAYLAND_DISPLAY", Some("/tmp/wayland-7"))]);
     assert_eq!(get_wayland_socket(&ctx).unwrap().unwrap(), PathBuf::from("/tmp/wayland-7"));
+    drop(env);
 }
 
-/// SAFETY: unsafe changes to environment variables
 #[test]
 #[cfg_attr(not(target_os = "linux"), ignore = "Linux-specifix")]
-fn test_x11_error() {
-    unsafe { env::remove_var("DISPLAY") };
+fn test_a_x11_error() {
+    env_lock::lock_env([("DISPLAY", None::<&str>)]);
 
     let err = x11_xcb_add_acl("test", "test").unwrap_err();
     assert_eq!(
