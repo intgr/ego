@@ -46,6 +46,9 @@ fn main_inner() -> Result<(), AnyErr> {
     let args = parse_args(env::args());
     logging::init_with_level(args.log_level);
 
+    #[cfg(not(target_os = "linux"))]
+    warn!("Ego is built for Linux and not expected to work on '{}'", env::consts::OS);
+
     let mut vars: Vec<String> = Vec::new();
     let ctx = create_context(&args.user)?;
 
