@@ -1,0 +1,29 @@
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+end_of_line = lf
+insert_final_newline = true
+max_line_length = 120
+trim_trailing_whitespace = true
+
+[*.rs]
+indent_size = 4
+max_line_length = 100
+# Rust is formatted using `rustfmt`
+ij_rust_do_not_format_rustfmt_skip = true
+
+[{*.json,*.json5}]
+ij_json_array_wrapping = on_every_item
+ij_json_object_wrapping = on_every_item
+
+[{*.yaml,*.yml}]
+ij_yaml_spaces_within_braces = false
+ij_yaml_spaces_within_brackets = false
+
+[.idea/**{.xml,.iml}]
+insert_final_newline = false
+ij_xml_space_inside_empty_tag = true
+ij_xml_attribute_wrap = off
