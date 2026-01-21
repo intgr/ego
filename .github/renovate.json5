@@ -13,8 +13,8 @@
     "automerge": true,
     "automergeType": "pr",
     "platformAutomerge": false,
-    "schedule": ["* * * 1 *"],
-    "automergeSchedule": ["* * * 2 *"],
+    "schedule": ["* * 1 * *"],
+    "automergeSchedule": ["* * 2 * *"],
   },
   "packageRules": [
     {
