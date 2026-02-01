@@ -102,7 +102,7 @@ fn wayland_socket() {
 #[test]
 #[cfg_attr(not(target_os = "linux"), ignore = "Linux-specifix")]
 fn test_a_x11_error() {
-    env_lock::lock_env([("DISPLAY", None::<&str>)]);
+    let _env = env_lock::lock_env([("DISPLAY", None::<&str>)]);
 
     let err = x11_xcb_add_acl("test", "test").unwrap_err();
     assert_eq!(
