@@ -1,0 +1,12 @@
+# /etc/systemd/system/console-getty.service.d/override.conf
+[Service]
+#ExecStart=
+# ExecStart=-/usr/bin/sh -c '${CMD}'
+ExecStart=-/usr/bin/bash
+ExecStopPost=/usr/bin/systemctl poweroff --force
+StandardInput=tty
+StandardOutput=tty
+Type=oneshot
+Restart=no
+# XXX?
+KillMode=control-group
