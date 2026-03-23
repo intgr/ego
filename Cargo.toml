@@ -31,5 +31,5 @@ default = []
 [dev-dependencies]
 clap_complete = "~4.6.0"
 env-lock = "1.0.2"
-snapbox = "1.1.0"
+snapbox = "1.2.0"
 testing_logger = "0.1.1"
