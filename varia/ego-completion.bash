@@ -23,7 +23,7 @@ _ego() {
 
     case "${cmd}" in
         ego)
-            opts="-u -v -h -V --user --sudo --machinectl --machinectl-bare --old-xhost --verbose --help --version [command]..."
+            opts="-u -v -h -V --user --sudo --machinectl --machinectl-bare --old-xhost --verbose --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
