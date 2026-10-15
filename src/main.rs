@@ -61,15 +61,21 @@ fn main_inner() -> Result<(), AnyErr> {
         bail!("Error preparing runtime dir: {msg}");
     }
     match prepare_wayland(&ctx) {
-        Err(msg) => bail!("Error preparing Wayland: {msg}"),
+        Err(msg) => {
+            bail!("Error preparing Wayland: {msg}");
+        }
         Ok(ret) => vars.extend(ret),
     }
     match prepare_x11(&ctx, args.old_xhost) {
-        Err(msg) => bail!("Error preparing X11: {msg}"),
+        Err(msg) => {
+            bail!("Error preparing X11: {msg}");
+        }
         Ok(ret) => vars.extend(ret),
     }
     match prepare_pulseaudio(&ctx) {
-        Err(msg) => bail!("Error preparing PulseAudio: {msg}"),
+        Err(msg) => {
+            bail!("Error preparing PulseAudio: {msg}");
+        }
         Ok(ret) => vars.extend(ret),
     }
 
@@ -101,7 +107,9 @@ fn getenv_optional(key: &str) -> Result<Option<String>, SimpleError> {
         Ok(val) => Ok(Some(val)),
         Err(VarError::NotPresent) => Ok(None),
         // We could use Path type for non-Unicode paths, but it's not worth it. Fix your s*#t!
-        Err(VarError::NotUnicode(_)) => bail!("Env variable {key} invalid"),
+        Err(VarError::NotUnicode(_)) => {
+            bail!("Env variable {key} invalid");
+        }
     }
 }
 
@@ -109,7 +117,9 @@ fn getenv_optional(key: &str) -> Result<Option<String>, SimpleError> {
 fn getenv_path(key: &str) -> Result<PathBuf, SimpleError> {
     match getenv_optional(key)? {
         Some(val) => Ok(PathBuf::from(val)),
-        None => bail!("Env variable {key} unset"),
+        None => {
+            bail!("Env variable {key} unset");
+        }
     }
 }
 
@@ -270,7 +280,9 @@ fn prepare_pulseaudio(ctx: &EgoContext) -> Result<Vec<String>, AnyErr> {
             debug!("PulseAudio socket not found, skipping");
             return Ok(vec![]);
         }
-        Err(err) => bail!("'{}': {err}", socket_path.display()),
+        Err(err) => {
+            bail!("'{}': {err}", socket_path.display());
+        }
     };
 
     add_file_acl(pulse_dir.as_path(), ctx.target_uid, ACL_EXECUTE)?;
@@ -318,7 +330,7 @@ fn find_pulseaudio_cookie() -> Result<PathBuf, AnyErr> {
     bail!(
         "Cannot locate PulseAudio cookie \
         (tried $PULSE_COOKIE, ~/.config/pulse/cookie, ~/.pulse-cookie)"
-    )
+    );
 }
 
 /// Publish current user's pulse-cookie for target user

@@ -32,7 +32,9 @@ pub fn x11_xcb_add_acl(type_tag: &str, value: &str) -> Result<(), AnyErr> {
             )
             .into());
         }
-        Err(err) => bail!("Error connecting to X11: {err}"),
+        Err(err) => {
+            bail!("Error connecting to X11: {err}");
+        }
     };
 
     debug!("X11: Adding XHost entry SI:{type_tag}:{value}");
